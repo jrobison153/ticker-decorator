@@ -1,0 +1,34 @@
+{
+  "resource": "/ticker/decorate",
+  "path": "/ticker/decorate",
+  "httpMethod": "PUT",
+  "headers": null,
+  "queryStringParameters": null,
+  "pathParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "456204981758",
+    "resourceId": "xznq3u",
+    "stage": "test-invoke-stage",
+    "requestId": "test-invoke-request",
+    "identity": {
+      "cognitoIdentityPoolId": null,
+      "accountId": "456204981758",
+      "cognitoIdentityId": null,
+      "caller": "456204981758",
+      "apiKey": "test-invoke-api-key",
+      "sourceIp": "test-invoke-source-ip",
+      "accessKey": "ASIAIO2F2DKVFJNHPPLQ",
+      "cognitoAuthenticationType": null,
+      "cognitoAuthenticationProvider": null,
+      "userArn": "arn:aws:iam::456204981758:root",
+      "userAgent": "Apache-HttpClient/4.5.x (Java/1.8.0_102)",
+      "user": "456204981758"
+    },
+    "resourcePath": "/ticker/decorate",
+    "httpMethod": "PUT",
+    "apiId": "l5tcmj0vlk"
+  },
+  "body": "{\n    \"ticker\": {\"symbol\": \"goog\"} \n}",
+  "isBase64Encoded": false
+}

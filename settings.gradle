@@ -1,0 +1,5 @@
+rootProject.name = 'ticker-decorator'
+
+include 'spring'
+include 'lambda'
+include 'core'
