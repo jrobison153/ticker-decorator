@@ -15,7 +15,6 @@ class MongoConnectionITest extends FlatSpec
 
   it should "return a connection to the default database" in {
 
-//    fail()
   }
 
 }
