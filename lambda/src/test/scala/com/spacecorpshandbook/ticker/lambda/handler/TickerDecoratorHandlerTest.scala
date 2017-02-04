@@ -8,18 +8,21 @@ import com.spacecorpshandbook.ticker.core.model.Ticker
 import org.apache.commons.io.IOUtils
 import org.hamcrest.CoreMatchers.containsString
 import org.junit.runner.RunWith
-import org.junit.{Before, Test}
 import org.mockito.Matchers.{any, argThat}
 import org.mockito.Mockito.{mock, when}
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-@RunWith(classOf[PowerMockRunner])
+
 @PrepareForTest(Array {
   classOf[IOUtils]
 })
-class TickerDecoratorHandlerTest {
+@RunWith(classOf[PowerMockRunner])
+class TickerDecoratorHandlerTest extends FlatSpec
+  with Matchers
+  with BeforeAndAfter {
 
   var mockContext: Context = _
   var mockOutputStream: OutputStream = _
@@ -28,8 +31,7 @@ class TickerDecoratorHandlerTest {
   var inputObj: JsonObject = _
   var gson: Gson = _
 
-  @Before
-  def setup() {
+  before {
 
     gson = new Gson
     mockContext = mock(classOf[Context])
@@ -50,8 +52,9 @@ class TickerDecoratorHandlerTest {
     PowerMockito.mockStatic(classOf[IOUtils])
   }
 
-  @Test
-  def givenTickerWhenDecoratedThenTheNameIsEchoedBack() {
+  behavior of "ticker decorator handler when decorating a symbol without a chromosome"
+
+  it should "send back a ticker with a chromosome" in {
 
     val symbolName: String = "abcd"
     val expectedResponseMessage: String = "Decorated symbol " + symbolName
@@ -75,8 +78,7 @@ class TickerDecoratorHandlerTest {
     IOUtils.write(argThat(containsString(expectedResponseMessage)), any(classOf[OutputStream]), org.mockito.Matchers.eq("UTF-8"))
   }
 
-  @Test
-  def givenFullyPopulatedTickerInRequestWhenDecoratedThenItIsDeserializedWithoutError(): Unit = {
+  it should "deserialize a fully populated ticker without error" in {
 
     val ticker: Ticker = new Ticker
 
@@ -94,8 +96,6 @@ class TickerDecoratorHandlerTest {
 
     val handler: TickerDecoratorHandler = new TickerDecoratorHandler
     handler.decorateTicker(mockInputStream, mockOutputStream, mockContext)
-
   }
-
 
 }
