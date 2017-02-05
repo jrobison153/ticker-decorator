@@ -12,8 +12,6 @@ class MongoConnectionITest extends FlatSpec
 
     val database = MongoConnection.getDefaultDatabase
 
-
-
   }
 
 }
