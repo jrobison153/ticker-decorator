@@ -35,12 +35,3 @@ task fatJar(type: Jar) {
 }
 
 jar.dependsOn('fatJar')
-
-
-task scalaTest(dependsOn: ['testClasses'], type: JavaExec) {
-    main = 'org.scalatest.tools.Runner'
-    args = ['-R', 'build/classes/test', '-o']
-    classpath = sourceSets.test.runtimeClasspath
-}
-
-test.dependsOn scalaTest

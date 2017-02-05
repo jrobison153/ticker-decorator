@@ -6,18 +6,20 @@ import io.restassured.http.ContentType
 import io.restassured.module.mockmvc.RestAssuredMockMvc
 import io.restassured.module.mockmvc.RestAssuredMockMvc._
 import org.hamcrest.CoreMatchers._
-import org.junit.{Before, Test}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class TickerDecoratorControllerTest {
+class TickerDecoratorControllerTest extends FlatSpec
+  with Matchers
+  with BeforeAndAfter {
 
-  @Before
-  def setup(): Unit = {
+  before {
 
     RestAssuredMockMvc.standaloneSetup(new TickerDecoratorController)
   }
 
-  @Test
-  def givenTickerWhenDecoratedThenTheSymbolNameIsEchoedBack(): Unit = {
+  behavior of "ticker decorator controller when decorating a symbol without a chromosome"
+
+  it should "send back a ticker with a chromosome" in {
 
     val symbolName = "abc"
 
