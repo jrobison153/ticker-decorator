@@ -36,7 +36,8 @@ class TickerDecoratorHandler {
 
     try {
 
-      inputObj = parser.parse(IOUtils.toString(request, "UTF-8")).getAsJsonObject
+      val inputAsString = IOUtils.toString(request, "UTF-8")
+      inputObj = parser.parse(inputAsString).getAsJsonObject
 
       val body: String = inputObj.get("body").getAsString
       val ticker: Ticker = gson.fromJson(body, classOf[Ticker])
