@@ -1,11 +1,12 @@
 package com.spacecorpshandbook.ticker.core.model
 
 import scala.beans.BeanProperty
+import scala.reflect.runtime.{universe => ru}
 
 /**
   * Stock ticker resource type
   */
-class Ticker {
+class Ticker extends BsonMappable[Ticker] {
 
   @BeanProperty
   var ticker: String = ""

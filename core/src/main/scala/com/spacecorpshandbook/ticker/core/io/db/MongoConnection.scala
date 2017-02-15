@@ -1,4 +1,4 @@
-package com.spacecorpshandbook.ticker.io.db
+package com.spacecorpshandbook.ticker.core.io.db
 
 import org.mongodb.scala.{MongoClient, MongoDatabase}
 
@@ -6,8 +6,10 @@ import org.mongodb.scala.{MongoClient, MongoDatabase}
   */
 object MongoConnection {
 
-  private val DEFAULT_DATABASE_NAME = "stockData"
+  // TODO: this needs to be configurable
+  private val DEFAULT_DATABASE_NAME = "testStockData"
 
+  // TODO: this needs to be configurable
   val mongoClient: MongoClient = MongoClient("mongodb://localhost")
 
   def getDefaultDatabase: MongoDatabase = {

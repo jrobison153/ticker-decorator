@@ -26,8 +26,6 @@ task itest(type: Test) {
     testClassesDir = sourceSets.itest.output.classesDir
     classpath = sourceSets.itest.runtimeClasspath
 
-    classpath.each { println "${it}" }
-
     // This is not needed, but I like to see which tests have run
     testLogging {
         events "passed", "skipped", "failed"

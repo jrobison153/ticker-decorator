@@ -17,6 +17,8 @@ publishing {
 dependencies {
 
     compile 'org.mongodb.scala:mongo-scala-driver_2.11:1.2.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.6'
+
 }
 
 apply from: "../itest.gradle"

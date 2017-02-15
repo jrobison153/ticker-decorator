@@ -1,4 +1,4 @@
-package com.spacecorpshandbook.ticker.io.db
+package com.spacecorpshandbook.ticker.core.io.db
 
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
