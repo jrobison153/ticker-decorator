@@ -2,10 +2,8 @@ package com.spacecorpshandbook.ticker.core.map
 
 import com.spacecorpshandbook.ticker.core.model.BsonMappable
 import org.mongodb.scala.Document
-import org.mongodb.scala.bson.BsonDouble
+import org.mongodb.scala.bson.{BsonDouble, BsonJavaScript}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-
-import scala.beans.BeanProperty
 
 class BsonToBsonMappableTest extends FlatSpec
   with Matchers
@@ -24,19 +22,27 @@ class BsonToBsonMappableTest extends FlatSpec
     val expectedFooValue = "bar"
     val expectedBarValue = 33
     val expectedDadValue = "omicron persei 8"
-    val bsonDoc = Document("foo" -> expectedFooValue, "bar" -> expectedBarValue, "dad" -> expectedDadValue)
+    val expectedDval = new BsonDouble(44.3)
+
+    val bsonDoc = Document(
+      "foo" -> expectedFooValue,
+      "bar" -> expectedBarValue,
+      "dad" -> expectedDadValue,
+      "dVal" -> expectedDval
+    )
 
     BsonToBsonMappable.map(bsonDoc, dummyMappable)
 
     dummyMappable.foo should equal(expectedFooValue)
     dummyMappable.bar should equal(expectedBarValue)
     dummyMappable.dad should equal(expectedDadValue)
+    dummyMappable.dVal should equal(expectedDval.getValue)
   }
 
   it should "ignore supported BSON type" in {
 
-    val doubleVal: BsonDouble = new BsonDouble(2.333)
-    val bsonDoc = Document("dVal" -> doubleVal)
+    val unsuppotedType: BsonJavaScript = new BsonJavaScript("let x = 3")
+    val bsonDoc = Document("uVal" -> unsuppotedType)
 
     BsonToBsonMappable.map(bsonDoc, dummyMappable)
   }
@@ -51,14 +57,13 @@ class BsonToBsonMappableTest extends FlatSpec
 
 class AbsonMappableDummy extends BsonMappable[AbsonMappableDummy] {
 
-  @BeanProperty
   var foo: String = ""
 
-  @BeanProperty
   var bar: Int = 0
 
-  @beans.BeanProperty
   var dad: String = ""
 
   var dVal: Double = _
+
+  var uVal: String = _
 }

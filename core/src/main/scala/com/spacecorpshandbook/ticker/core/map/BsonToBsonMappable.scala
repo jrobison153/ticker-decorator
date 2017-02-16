@@ -4,7 +4,7 @@ package com.spacecorpshandbook.ticker.core.map
 import com.spacecorpshandbook.ticker.core.model.BsonMappable
 import org.bson.{BsonInt32, BsonString}
 import org.mongodb.scala.Document
-import org.mongodb.scala.bson.BsonValue
+import org.mongodb.scala.bson.{BsonDouble, BsonValue}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -54,10 +54,16 @@ object BsonToBsonMappable {
       fieldMirror.set(fieldValue.asInstanceOf[BsonString].getValue)
     }
     else if (fieldValue.isDecimal128) {
+
       fieldMirror.set(BigDecimal(fieldValue.asInstanceOf[BsonString].getValue))
     }
     else if (fieldValue.isInt32) {
+
       fieldMirror.set(fieldValue.asInstanceOf[BsonInt32].getValue)
+    }
+    else if(fieldValue.isDouble) {
+
+      fieldMirror.set(fieldValue.asInstanceOf[BsonDouble].getValue)
     }
     else {
 

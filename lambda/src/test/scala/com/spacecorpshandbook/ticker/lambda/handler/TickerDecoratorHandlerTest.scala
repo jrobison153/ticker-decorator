@@ -61,10 +61,10 @@ class TickerDecoratorHandlerTest extends FlatSpec
 
       ticker.ticker = "foo"
       ticker.date = "1999-11-29"
-      ticker.open = BigDecimal(87.22)
-      ticker.close = BigDecimal(89.21)
-      ticker.high = BigDecimal(90.11)
-      ticker.low = BigDecimal(80.11)
+      ticker.open = 87.22
+      ticker.close = 89.21
+      ticker.high = 90.11
+      ticker.low = 80.11
 
       setupInputStreamForTicker(ticker)
 

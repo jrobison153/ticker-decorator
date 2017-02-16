@@ -15,16 +15,16 @@ class Ticker extends BsonMappable[Ticker] {
   var date: String = ""
 
   @BeanProperty
-  var open: BigDecimal = _
+  var open: Double = _
 
   @BeanProperty
-  var close: BigDecimal = _
+  var close: Double = _
 
   @BeanProperty
-  var high: BigDecimal = _
+  var high: Double = _
 
   @BeanProperty
-  var low: BigDecimal = _
+  var low: Double = _
 
   @BeanProperty
   var chromosome: String = ""
