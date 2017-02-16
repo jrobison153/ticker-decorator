@@ -1,6 +1,6 @@
 package com.spacecorpshandbook.ticker.spring.controller
 
-import com.google.gson.Gson
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import io.restassured.http.ContentType
 import io.restassured.module.mockmvc.RestAssuredMockMvc
@@ -11,6 +11,8 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 class TickerDecoratorControllerTest extends FlatSpec
   with Matchers
   with BeforeAndAfter {
+
+  val objMapper : ObjectMapper = new ObjectMapper
 
   before {
 
@@ -26,10 +28,8 @@ class TickerDecoratorControllerTest extends FlatSpec
     val ticker: Ticker = new Ticker
     ticker.ticker = symbolName
 
-    val gson: Gson = new Gson
-
     given.
-      body(gson.toJson(ticker))
+      body(objMapper.writeValueAsString(ticker))
       .contentType(ContentType.JSON)
       .when
       .post("/ticker/decorate")

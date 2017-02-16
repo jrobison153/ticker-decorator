@@ -3,7 +3,8 @@ package com.spacecorpshandbook.ticker.lambda.handler
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
 
 import com.amazonaws.services.lambda.runtime.Context
-import com.google.gson.{Gson, JsonObject, JsonParser}
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.spacecorpshandbook.ticker.core.model.{Ticker, TickerDecoratorResponse}
 import com.spacecorpshandbook.ticker.lambda.proxy.ApiGatewayProxyResponse
 import org.apache.commons.io.IOUtils
@@ -18,13 +19,11 @@ class TickerDecoratorHandlerTest extends FlatSpec
   var mockContext: Context = _
   var outputStream: OutputStream = _
   var inputStream: InputStream = _
-  var inputJsonObject: JsonObject = _
-  var inputObj: JsonObject = _
-  var gson: Gson = _
+  var inputObj: JsonNode = _
+  val objMapper: ObjectMapper = new ObjectMapper()
 
   before {
 
-    gson = new Gson
     mockContext = mock(classOf[Context])
     outputStream = new ByteArrayOutputStream
 
@@ -32,9 +31,7 @@ class TickerDecoratorHandlerTest extends FlatSpec
 
     val requestAsStream = classLoader.getResourceAsStream("ApiProxyRequestTemplate.json")
 
-    val parser: JsonParser = new JsonParser
-
-    inputObj = parser.parse(IOUtils.toString(requestAsStream, "UTF-8")).getAsJsonObject
+    inputObj = objMapper.readTree(requestAsStream)
   }
 
   behavior of "ticker decorator handler when decorating a symbol without a chromosome"
@@ -80,8 +77,10 @@ class TickerDecoratorHandlerTest extends FlatSpec
 
   private def setupInputStreamForTicker(ticker: Ticker): Unit = {
 
-    inputObj.remove("body")
-    inputObj.addProperty("body", gson.toJson(ticker))
+    val tickerAsJsonNode :JsonNode = objMapper.valueToTree(ticker)
+    inputObj.asInstanceOf[ObjectNode].set("body", tickerAsJsonNode)
+
+    val foo = inputObj.toString
 
     inputStream = IOUtils.toInputStream(inputObj.toString, "UTF-8")
   }
@@ -89,9 +88,9 @@ class TickerDecoratorHandlerTest extends FlatSpec
   def parseOutputStream(): TickerDecoratorResponse = {
 
     val responseAsString = outputStream.toString
-    val gatewayResponse = gson.fromJson(responseAsString, classOf[ApiGatewayProxyResponse])
+    val gatewayResponse = objMapper.readValue(responseAsString, classOf[ApiGatewayProxyResponse])
     val decoratorResponseAsString = gatewayResponse.getBody
 
-    gson.fromJson(decoratorResponseAsString, classOf[TickerDecoratorResponse])
+    objMapper.readValue(decoratorResponseAsString, classOf[TickerDecoratorResponse])
   }
 }

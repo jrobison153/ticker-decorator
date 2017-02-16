@@ -1,8 +1,7 @@
 package com.spacecorpshandbook.ticker.lambda.proxy
 
+import beans.BeanProperty
 import java.util.Map
-
-import scala.beans.BeanProperty
 
 /**
   * Required response structure for the AWS API Gateway

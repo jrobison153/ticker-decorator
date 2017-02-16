@@ -1,6 +1,5 @@
 package com.spacecorpshandbook.ticker.core.service
 
-import com.google.gson.Gson
 import org.mongodb.scala._
 import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, Matchers}
 
@@ -16,7 +15,6 @@ class DecoratorServiceITest extends AsyncFlatSpec
 
   var decoratorService: DecoratorService = _
   var mongoClient: MongoClient = _
-  val gson = new Gson
 
   before {
 

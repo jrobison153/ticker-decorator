@@ -1,14 +1,12 @@
 package com.spacecorpshandbook.ticker.lambda.handler
 
-import java.io.{IOException, InputStream, OutputStream}
-import java.util
+import java.io.{InputStream, OutputStream}
+import java.util.HashMap
 
 import com.amazonaws.services.lambda.runtime.Context
-import com.google.gson.{Gson, JsonObject, JsonParser}
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.spacecorpshandbook.ticker.core.model.{Ticker, TickerDecoratorResponse}
 import com.spacecorpshandbook.ticker.lambda.proxy.ApiGatewayProxyResponse
-import org.apache.commons.io.IOUtils
-
 
 /**
   * Amazon Lambda handler adapter for the ticker decorator application
@@ -21,66 +19,47 @@ class TickerDecoratorHandler {
 
     val decoratorResponse: TickerDecoratorResponse = decorateTicker(ticker)
 
-    val output = convertTickerToString(response, decoratorResponse)
+    val output = createApiGatewayResponse(response, decoratorResponse)
 
-    IOUtils.write(output, response, "UTF-8")
+    val objMapper: ObjectMapper = new ObjectMapper
+
+    objMapper writeValue(response, output)
   }
 
   private[this] def convertStreamToTicker(request: InputStream, context: Context): Ticker = {
 
+      val objMapper: ObjectMapper = new ObjectMapper
+      val httpRequest: JsonNode = objMapper readTree request
 
-    val parser: JsonParser = new JsonParser
-    val gson: Gson = new Gson
-    var inputObj: JsonObject = null
-    val logger = context.getLogger
+      val body: JsonNode = httpRequest get "body"
 
-    try {
-
-      val inputAsString = IOUtils.toString(request, "UTF-8")
-      inputObj = parser.parse(inputAsString).getAsJsonObject
-
-      val body: String = inputObj.get("body").getAsString
-      val ticker: Ticker = gson.fromJson(body, classOf[Ticker])
-
-      ticker
-
-    } catch {
-
-      case e: IOException =>
-
-        logger.log("Error while reading request\n" + e.getMessage)
-        throw new RuntimeException(e.getMessage)
-
-    }
+      objMapper.readValue(body.toString, classOf[Ticker])
   }
 
   private[this] def decorateTicker(ticker: Ticker): TickerDecoratorResponse = {
 
     val decroatorResponse = new TickerDecoratorResponse
 
-    decroatorResponse.setMessage("Decorated symbol " + ticker.ticker)
+    decroatorResponse.message = "Decorated symbol " + ticker.ticker
 
     decroatorResponse
   }
 
-  private[this] def convertTickerToString(outputStream: OutputStream, decoratorResponse: TickerDecoratorResponse): String = {
+  private[this] def createApiGatewayResponse(outputStream: OutputStream, decoratorResponse: TickerDecoratorResponse): ApiGatewayProxyResponse = {
 
     val apiGatewayProxyResponse = new ApiGatewayProxyResponse
 
-    val gson: Gson = new Gson
+    val objMapper = new ObjectMapper
 
-    apiGatewayProxyResponse.setBody(gson.toJson(decoratorResponse))
+    apiGatewayProxyResponse.body = objMapper.writeValueAsString(decoratorResponse)
 
-    apiGatewayProxyResponse.setStatusCode("200")
+    apiGatewayProxyResponse.statusCode = "200"
 
-    val headerValues = new util.HashMap[String, String]
-
+    val headerValues = new HashMap[String, String]
     headerValues put("Content-Type", "application/json")
 
-    apiGatewayProxyResponse.setHeaders(headerValues)
+    apiGatewayProxyResponse.headers = headerValues
 
-    val output: String = gson.toJson(apiGatewayProxyResponse)
-
-    output
+    apiGatewayProxyResponse
   }
 }
