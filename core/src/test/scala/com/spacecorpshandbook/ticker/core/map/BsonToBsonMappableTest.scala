@@ -1,6 +1,8 @@
 package com.spacecorpshandbook.ticker.core.map
 
 import com.spacecorpshandbook.ticker.core.model.BsonMappable
+import org.bson.BsonObjectId
+import org.bson.types.ObjectId
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.{BsonDouble, BsonJavaScript}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -23,12 +25,15 @@ class BsonToBsonMappableTest extends FlatSpec
     val expectedBarValue = 33
     val expectedDadValue = "omicron persei 8"
     val expectedDval = new BsonDouble(44.3)
+    val expectedId = new ObjectId()
+    val expectedObjectId = new BsonObjectId(expectedId)
 
     val bsonDoc = Document(
       "foo" -> expectedFooValue,
       "bar" -> expectedBarValue,
       "dad" -> expectedDadValue,
-      "dVal" -> expectedDval
+      "dVal" -> expectedDval,
+      "id" -> expectedObjectId
     )
 
     BsonToBsonMappable.map(bsonDoc, dummyMappable)
@@ -37,6 +42,7 @@ class BsonToBsonMappableTest extends FlatSpec
     dummyMappable.bar should equal(expectedBarValue)
     dummyMappable.dad should equal(expectedDadValue)
     dummyMappable.dVal should equal(expectedDval.getValue)
+    dummyMappable.id should equal(expectedId.toHexString)
   }
 
   it should "ignore supported BSON type" in {
@@ -56,6 +62,8 @@ class BsonToBsonMappableTest extends FlatSpec
 }
 
 class AbsonMappableDummy extends BsonMappable[AbsonMappableDummy] {
+
+  var id: String = ""
 
   var foo: String = ""
 

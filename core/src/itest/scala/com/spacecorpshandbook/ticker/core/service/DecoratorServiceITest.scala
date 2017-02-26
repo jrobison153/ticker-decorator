@@ -1,9 +1,13 @@
 package com.spacecorpshandbook.ticker.core.service
 
+import com.spacecorpshandbook.ticker.core.map.BsonToBsonMappable
+import com.spacecorpshandbook.ticker.core.model.Ticker
+import org.bson.types.ObjectId
 import org.mongodb.scala._
 import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, Matchers}
 
 import scala.concurrent.Future
+import scala.util.Success
 
 /**
   * Test Requirements
@@ -14,30 +18,56 @@ class DecoratorServiceITest extends AsyncFlatSpec
   with BeforeAndAfter {
 
   var decoratorService: DecoratorService = _
-  var mongoClient: MongoClient = _
-
-  before {
-
-    mongoClient = MongoClient("mongodb://localhost")
-  }
+  val mongoClient: MongoClient = MongoClient("mongodb://localhost")
+  val mongoCollection = mongoClient.getDatabase("testStockData").getCollection("tickers")
 
   behavior of "a DecoratorService on an brand new, un-decorated, ticker"
 
   it should "add a chromosome" in {
 
-    val futureDocuments: Future[Seq[Document]] = mongoClient.getDatabase("testStockData")
-      .getCollection("tickers")
-      .find(org.mongodb.scala.model.Filters.equal("ticker", "A"))
-      .first.toFuture
+    val findFuture = findSymbolAndDeleteFromDatabase()
 
-    futureDocuments map { documents =>
+    val testFuture = findFuture andThen {
 
-      val tickerDoc = documents.head
+      case Success(documents) => {
 
-      println(tickerDoc)
+        val tickerDoc = documents.head
 
-      documents.length should equal(0)
+        val ticker: Ticker = new Ticker
+
+        BsonToBsonMappable.map(tickerDoc, ticker)
+
+        val decoratorService = new DecoratorService
+
+        val updatedTicker: Ticker = decoratorService.addChromosome(ticker)
+
+        findSymbolInDatabase(tickerDoc.getObjectId("_id"))
+      }
     }
 
+    testFuture map { documents =>
+
+      val updatedTickerDoc = documents.head
+
+      val updatedTicker = new Ticker
+
+      BsonToBsonMappable.map(updatedTickerDoc, updatedTicker)
+
+      assert(updatedTicker.chromosome.length > 0)
+    }
+  }
+
+  def findSymbolAndDeleteFromDatabase(): Future[Seq[Document]] = {
+
+    mongoCollection
+      .findOneAndDelete(org.mongodb.scala.model.Filters.equal("ticker", "A"))
+      .toFuture
+  }
+
+  def findSymbolInDatabase(id: ObjectId): Future[Seq[Document]] = {
+
+    mongoCollection
+      .find(org.mongodb.scala.model.Filters.equal("id", id))
+      .toFuture
   }
 }

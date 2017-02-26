@@ -9,6 +9,9 @@ import scala.reflect.runtime.{universe => ru}
 class Ticker extends BsonMappable[Ticker] {
 
   @BeanProperty
+  var id: String = ""
+
+  @BeanProperty
   var ticker: String = ""
 
   @BeanProperty

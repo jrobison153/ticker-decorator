@@ -65,6 +65,10 @@ object BsonToBsonMappable {
 
       fieldMirror.set(fieldValue.asInstanceOf[BsonDouble].getValue)
     }
+    else if(fieldValue.isObjectId) {
+
+      fieldMirror.set(fieldValue.asObjectId.getValue.toHexString)
+    }
     else {
 
       println("Unknown field type in BSON Document' " + fieldValue.toString + "'. Value cannot be mapped until mapper is updated")
