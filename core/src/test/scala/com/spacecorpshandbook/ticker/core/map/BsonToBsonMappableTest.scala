@@ -1,8 +1,10 @@
 package com.spacecorpshandbook.ticker.core.map
 
+import java.time.{LocalDateTime, ZoneId}
+
 import com.spacecorpshandbook.ticker.core.model.BsonMappable
-import org.bson.BsonObjectId
 import org.bson.types.ObjectId
+import org.bson.{BsonDateTime, BsonObjectId}
 import org.mongodb.scala.Document
 import org.mongodb.scala.bson.{BsonDouble, BsonJavaScript}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -27,13 +29,16 @@ class BsonToBsonMappableTest extends FlatSpec
     val expectedDval = new BsonDouble(44.3)
     val expectedId = new ObjectId()
     val expectedObjectId = new BsonObjectId(expectedId)
+    val expectedDateTime = LocalDateTime.now().atZone(ZoneId.of("UTC"))
+    val expectedBsonDate = new BsonDateTime(expectedDateTime.toInstant.toEpochMilli)
 
     val bsonDoc = Document(
       "foo" -> expectedFooValue,
       "bar" -> expectedBarValue,
       "dad" -> expectedDadValue,
       "dVal" -> expectedDval,
-      "id" -> expectedObjectId
+      "id" -> expectedObjectId,
+      "date" -> expectedBsonDate
     )
 
     BsonToBsonMappable.map(bsonDoc, dummyMappable)
@@ -43,6 +48,7 @@ class BsonToBsonMappableTest extends FlatSpec
     dummyMappable.dad should equal(expectedDadValue)
     dummyMappable.dVal should equal(expectedDval.getValue)
     dummyMappable.id should equal(expectedId.toHexString)
+    dummyMappable.date should equal(expectedDateTime.toLocalDateTime)
   }
 
   it should "ignore supported BSON type" in {
@@ -74,4 +80,6 @@ class AbsonMappableDummy extends BsonMappable[AbsonMappableDummy] {
   var dVal: Double = _
 
   var uVal: String = _
+
+  var date: LocalDateTime = _
 }

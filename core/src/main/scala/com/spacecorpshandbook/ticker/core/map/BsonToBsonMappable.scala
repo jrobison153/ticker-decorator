@@ -1,6 +1,8 @@
 package com.spacecorpshandbook.ticker.core.map
 
 
+import java.time._
+
 import com.spacecorpshandbook.ticker.core.model.BsonMappable
 import org.bson.{BsonInt32, BsonString}
 import org.mongodb.scala.Document
@@ -61,13 +63,22 @@ object BsonToBsonMappable {
 
       fieldMirror.set(fieldValue.asInstanceOf[BsonInt32].getValue)
     }
-    else if(fieldValue.isDouble) {
+    else if (fieldValue.isDouble) {
 
       fieldMirror.set(fieldValue.asInstanceOf[BsonDouble].getValue)
     }
-    else if(fieldValue.isObjectId) {
+    else if (fieldValue.isObjectId) {
 
       fieldMirror.set(fieldValue.asObjectId.getValue.toHexString)
+    }
+    else if (fieldValue.isDateTime) {
+
+      val secondsSinceEpoch = fieldValue.asDateTime.getValue
+      val instantSinceEpoch = Instant.ofEpochMilli(secondsSinceEpoch)
+      val zonedDateTime = instantSinceEpoch.atZone(ZoneId.of("UTC"))
+      val date = zonedDateTime.toLocalDateTime
+
+      fieldMirror.set(date)
     }
     else {
 
