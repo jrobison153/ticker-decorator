@@ -15,6 +15,9 @@ import scala.reflect.runtime.{universe => ru}
   */
 object BsonToBsonMappable {
 
+  val PRIMARY_KEY_DB = "_id"
+  val PRIMARY_KEY_BSON_MAPPABLE = "id"
+
   val runtimeMirror = ru.runtimeMirror(BsonToBsonMappable.getClass.getClassLoader)
 
   /**
@@ -47,6 +50,21 @@ object BsonToBsonMappable {
         case None => println("Document did not contain value for key: '" + field.name.toString + "'")
       }
     })
+
+    // may need to specially handle mapping of _id to id because we cannot annotate _id with @BeanProperty
+    // in our BsonMappable and _id is the default id field in the database
+    fromDoc.get(PRIMARY_KEY_DB) match {
+
+      case Some(idValue) =>
+        val fieldTermSymbol = toObj.mappableType.decl(ru.TermName(PRIMARY_KEY_BSON_MAPPABLE)).asTerm
+        val fieldMirror = instanceMirror.reflectField(fieldTermSymbol)
+
+        if (idValue.isObjectId) {
+
+          fieldMirror.set(idValue.asObjectId.getValue.toHexString)
+        }
+      case None =>
+    }
   }
 
   private def mapValueToObjectInstanceField(fieldValue: BsonValue, fieldMirror: ru.FieldMirror) = {
@@ -57,7 +75,7 @@ object BsonToBsonMappable {
     }
     else if (fieldValue.isDecimal128) {
 
-      fieldMirror.set(BigDecimal(fieldValue.asInstanceOf[BsonString].getValue))
+      fieldMirror.set(new BigDecimal(fieldValue.asDecimal128().getValue.bigDecimalValue))
     }
     else if (fieldValue.isInt32) {
 

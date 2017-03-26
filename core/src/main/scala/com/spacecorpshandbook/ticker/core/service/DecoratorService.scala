@@ -1,22 +1,38 @@
 package com.spacecorpshandbook.ticker.core.service
 
+import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeEncoder
 import com.spacecorpshandbook.ticker.core.model.Ticker
+import com.spacecorpshandbook.ticker.core.search.DatabaseSearcher
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
-  * Represents the various ways to decorate a Ticker
+  * Provides high level orchestration of the process for updating a ticker
   */
-case class DecoratorService() {
+class DecoratorService(dbSearcher: DatabaseSearcher,
+                            chromosomeEncoder: ChromosomeEncoder) {
+
+  implicit val ec = ExecutionContext.global
 
   /**
-    *
     * Update the provided ticker with a chromosome
     *
     * @param ticker
     * @return ticker updated with a chromosome
     */
-  def addChromosome(ticker: Ticker): Ticker = {
+  def addChromosome(ticker: Ticker): Future[Ticker] = {
 
-    return new Ticker
+    val findFuture = dbSearcher.getHistoricalTickersFromDateLimitByDays(ticker, 10)
+
+    findFuture map { tickers =>
+
+      chromosomeEncoder.mapFiveDaySmaCrossingTenDaySma(tickers)
+
+      // update/insert updated ticker back into database
+
+      ticker
+    }
   }
+
 
 }

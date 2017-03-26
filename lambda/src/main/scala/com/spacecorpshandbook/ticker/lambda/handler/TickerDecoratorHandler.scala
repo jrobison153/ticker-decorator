@@ -13,6 +13,8 @@ import com.spacecorpshandbook.ticker.lambda.proxy.ApiGatewayProxyResponse
   */
 class TickerDecoratorHandler {
 
+  val objMapper: ObjectMapper = new ObjectMapper().findAndRegisterModules
+
   def decorateTicker(request: InputStream, response: OutputStream, context: Context): Unit = {
 
     val ticker: Ticker = convertStreamToTicker(request, context)
@@ -21,19 +23,18 @@ class TickerDecoratorHandler {
 
     val output = createApiGatewayResponse(response, decoratorResponse)
 
-    val objMapper: ObjectMapper = new ObjectMapper
+    objMapper.findAndRegisterModules
 
     objMapper writeValue(response, output)
   }
 
   private[this] def convertStreamToTicker(request: InputStream, context: Context): Ticker = {
 
-      val objMapper: ObjectMapper = new ObjectMapper
-      val httpRequest: JsonNode = objMapper readTree request
+    val httpRequest: JsonNode = objMapper readTree request
 
-      val body: JsonNode = httpRequest get "body"
+    val body: JsonNode = httpRequest get "body"
 
-      objMapper.readValue(body.toString, classOf[Ticker])
+    objMapper.readValue(body.toString, classOf[Ticker])
   }
 
   private[this] def decorateTicker(ticker: Ticker): TickerDecoratorResponse = {
@@ -48,8 +49,6 @@ class TickerDecoratorHandler {
   private[this] def createApiGatewayResponse(outputStream: OutputStream, decoratorResponse: TickerDecoratorResponse): ApiGatewayProxyResponse = {
 
     val apiGatewayProxyResponse = new ApiGatewayProxyResponse
-
-    val objMapper = new ObjectMapper
 
     apiGatewayProxyResponse.body = objMapper.writeValueAsString(decoratorResponse)
 

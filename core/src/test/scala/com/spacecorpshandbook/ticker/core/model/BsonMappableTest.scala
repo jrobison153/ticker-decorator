@@ -54,7 +54,7 @@ class BsonMappableTest extends FlatSpec
 
   it should "store a child type for each instantiated sub-type" in {
 
-    dumboMappable.getMappableFields.size should be(2)
+    dumboMappable.getMappableFields.size should be(3)
   }
 
   it should "return method symbols for a concrete type" in {

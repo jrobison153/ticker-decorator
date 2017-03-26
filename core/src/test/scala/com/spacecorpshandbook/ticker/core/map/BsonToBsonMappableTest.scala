@@ -6,7 +6,7 @@ import com.spacecorpshandbook.ticker.core.model.BsonMappable
 import org.bson.types.ObjectId
 import org.bson.{BsonDateTime, BsonObjectId}
 import org.mongodb.scala.Document
-import org.mongodb.scala.bson.{BsonDouble, BsonJavaScript}
+import org.mongodb.scala.bson.{BsonDecimal128, BsonDouble, BsonJavaScript}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class BsonToBsonMappableTest extends FlatSpec
@@ -31,6 +31,7 @@ class BsonToBsonMappableTest extends FlatSpec
     val expectedObjectId = new BsonObjectId(expectedId)
     val expectedDateTime = LocalDateTime.now().atZone(ZoneId.of("UTC"))
     val expectedBsonDate = new BsonDateTime(expectedDateTime.toInstant.toEpochMilli)
+    val expectedBigDecimal = BsonDecimal128(123.3434)
 
     val bsonDoc = Document(
       "foo" -> expectedFooValue,
@@ -38,7 +39,8 @@ class BsonToBsonMappableTest extends FlatSpec
       "dad" -> expectedDadValue,
       "dVal" -> expectedDval,
       "id" -> expectedObjectId,
-      "date" -> expectedBsonDate
+      "date" -> expectedBsonDate,
+      "bigNumber" -> expectedBigDecimal
     )
 
     BsonToBsonMappable.map(bsonDoc, dummyMappable)
@@ -49,6 +51,19 @@ class BsonToBsonMappableTest extends FlatSpec
     dummyMappable.dVal should equal(expectedDval.getValue)
     dummyMappable.id should equal(expectedId.toHexString)
     dummyMappable.date should equal(expectedDateTime.toLocalDateTime)
+    dummyMappable.bigNumber should equal(BigDecimal(expectedBigDecimal.getValue.bigDecimalValue))
+  }
+
+  it should "map _id to id" in {
+
+    val expectedId = new ObjectId()
+    val expectedObjectId = new BsonObjectId(expectedId)
+
+    val bsonDoc = Document("_id" -> expectedObjectId)
+
+    BsonToBsonMappable.map(bsonDoc, dummyMappable)
+
+    dummyMappable.id should equal(expectedId.toHexString)
   }
 
   it should "ignore supported BSON type" in {
@@ -82,4 +97,6 @@ class AbsonMappableDummy extends BsonMappable[AbsonMappableDummy] {
   var uVal: String = _
 
   var date: LocalDateTime = _
+
+  var bigNumber: BigDecimal = _
 }

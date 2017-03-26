@@ -1,5 +1,9 @@
 package com.spacecorpshandbook.ticker.core.model
 
+import java.time.LocalDateTime
+
+import com.spacecorpshandbook.ticker.core.constant.ChromosomeDecoder
+
 import scala.beans.BeanProperty
 import scala.reflect.runtime.{universe => ru}
 
@@ -15,21 +19,21 @@ class Ticker extends BsonMappable[Ticker] {
   var ticker: String = ""
 
   @BeanProperty
-  var date: String = ""
+  var date: LocalDateTime = _
 
   @BeanProperty
-  var open: Double = _
+  var open: BigDecimal = _
 
   @BeanProperty
-  var close: Double = _
+  var close: BigDecimal = _
 
   @BeanProperty
-  var high: Double = _
+  var high: BigDecimal = _
 
   @BeanProperty
-  var low: Double = _
+  var low: BigDecimal = _
 
   @BeanProperty
-  var chromosome: String = ""
+  var chromosome: String = ChromosomeDecoder.DEFAULT_CHROMOSOME
 
 }

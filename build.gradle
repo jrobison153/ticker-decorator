@@ -3,6 +3,7 @@ subprojects {
     ext {
         jacksonVersion = "2.8.6"
         scalaVersion = "2.11.8"
+        scalaTestVersion = "3.0.1"
     }
 
 
@@ -23,11 +24,12 @@ subprojects {
         compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
         compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
         compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
-
+        compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
 
 
         testCompile group: 'junit', name: 'junit', version: '4.12'
-        testCompile group: 'org.scalatest', name: 'scalatest_2.11', version: '3.0.1'
+        testCompile "org.scalatest:scalatest_2.11:${scalaTestVersion}"
+        testCompile "org.scalamock:scalamock-scalatest-support_2.11:3.5.0"
         testCompile group: 'org.mockito', name: 'mockito-core', version: '1.9.5'
     }
 
