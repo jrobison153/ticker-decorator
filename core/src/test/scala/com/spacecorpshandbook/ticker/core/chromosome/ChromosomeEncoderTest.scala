@@ -27,8 +27,8 @@ class ChromosomeEncoderTest extends FlatSpec
       (movingAverageCalculatorStub.calculateForDays _).when(*, 5).returns(fasterSma)
       (movingAverageCalculatorStub.calculateForDays _).when(*, 10).returns(slowerSma)
 
-      val encoder = new ChromosomeEncoder(ticker, movingAverageCalculatorStub)
-      encoder.mapFiveDaySmaCrossingTenDaySma(history)
+      val encoder = new ChromosomeEncoder(movingAverageCalculatorStub)
+      encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
     }
 
     def setBit(bitIndex: Int, newValueForIndex: Char): Unit = {

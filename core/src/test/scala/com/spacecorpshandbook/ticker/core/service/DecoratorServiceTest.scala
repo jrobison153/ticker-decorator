@@ -1,8 +1,8 @@
 package com.spacecorpshandbook.ticker.core.service
 
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeEncoder
+import com.spacecorpshandbook.ticker.core.io.db.Persistence
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import com.spacecorpshandbook.ticker.core.search.DatabaseSearcher
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest._
 
@@ -15,9 +15,10 @@ class DecoratorServiceTest extends AsyncFlatSpec
   with OneInstancePerTest {
 
   var decoratorService: DecoratorService = _
-  var ticker: Ticker = _
+  var originalTicker: Ticker = _
+  val decoratedTicker: Ticker = new Ticker
   var updatedTicker: Ticker = _
-  var databaseSearcherStub: DatabaseSearcher = _
+  var persistenceStub: Persistence = _
   var chromosomeEncoderStub: ChromosomeEncoder = _
 
   val tickerA = new Ticker()
@@ -25,23 +26,35 @@ class DecoratorServiceTest extends AsyncFlatSpec
 
   val dummyTickerSeq = Seq(tickerA, tickerB)
 
-  def setup(fiveDaySma: BigDecimal = 6.0, tenDaySma: BigDecimal = 3.0): Future[Ticker] = {
+  def setup(): Future[Ticker] = {
 
-    val resolvedFuture: Future[Seq[Ticker]] = Future {
+    val searchFuture: Future[Seq[Ticker]] = Future {
 
       dummyTickerSeq
     }
 
-    databaseSearcherStub = stub[DatabaseSearcher]
-    (databaseSearcherStub.getHistoricalTickersFromDateLimitByDays _).when(*, *).returns(resolvedFuture)
+    updatedTicker = new Ticker
+    val updateFuture: Future[Ticker] = Future {
+
+      updatedTicker
+    }
+
+    originalTicker = new Ticker
+
+    persistenceStub = stub[Persistence]
+    (persistenceStub.beforeDate _).when(*).returns(persistenceStub)
+    (persistenceStub.symbol _).when(*).returns(persistenceStub)
+    (persistenceStub.limit _).when(*).returns(persistenceStub)
+    (persistenceStub.search _).when().returns(searchFuture)
 
     chromosomeEncoderStub = stub[ChromosomeEncoder]
+    (chromosomeEncoderStub.mapFiveDaySmaCrossingTenDaySma _).when(*, *).returns(decoratedTicker)
 
-    decoratorService = new DecoratorService(databaseSearcherStub, chromosomeEncoderStub)
+    (persistenceStub.update _).when(decoratedTicker).returns(updateFuture)
 
-    ticker = new Ticker
+    decoratorService = new DecoratorService(persistenceStub, chromosomeEncoderStub)
 
-    val tickerDecoratedFuture = decoratorService.addChromosome(ticker)
+    val tickerDecoratedFuture = decoratorService.addChromosome(originalTicker)
 
     tickerDecoratedFuture
   }
@@ -52,10 +65,22 @@ class DecoratorServiceTest extends AsyncFlatSpec
 
     val setupDone: Future[Ticker] = setup()
 
-    setupDone map {ticker =>
+    setupDone map { _ =>
 
-      (chromosomeEncoderStub.mapFiveDaySmaCrossingTenDaySma _).verify(dummyTickerSeq)
+      (chromosomeEncoderStub.mapFiveDaySmaCrossingTenDaySma _).verify(originalTicker, dummyTickerSeq)
       succeed
     }
   }
+
+  it should "write the updated ticker to the database" in {
+
+    val setupDone = setup()
+
+    setupDone map { _ =>
+
+      (persistenceStub.update _).verify(decoratedTicker)
+      succeed
+    }
+  }
+
 }

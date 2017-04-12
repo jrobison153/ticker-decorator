@@ -7,23 +7,27 @@ import com.spacecorpshandbook.ticker.core.model.Ticker
 /**
   * Updates the various 'bits' of a chromosome
   *
-  * @param target - ticker who's chromosome should be updated
   * @param movingAverageCalculator
   */
-class ChromosomeEncoder(target: Ticker, movingAverageCalculator: SimpleMovingAverageCalculator) {
+class ChromosomeEncoder(movingAverageCalculator: SimpleMovingAverageCalculator) {
+
+  var targetTicker: Ticker = _
 
   /**
     *
     * Set the 5 day SMA crossed 10 day SMA bit based on the historical performance of this equity
     *
+    * @param target  - ticker who's chromosome should be updated
     * @param history - historical ticker data to be used to calculate chromosome values
     * @return the updated ticker
     */
-  def mapFiveDaySmaCrossingTenDaySma(history: Seq[Ticker]): Ticker = {
+  def mapFiveDaySmaCrossingTenDaySma(target: Ticker, history: Seq[Ticker]): Ticker = {
+
+    targetTicker = target
 
     updateFiveDayMovingAverageBit(history)
 
-    target
+    targetTicker
   }
 
   private[this] def updateFiveDayMovingAverageBit(tickerHistory: Seq[Ticker]) = {
@@ -43,8 +47,8 @@ class ChromosomeEncoder(target: Ticker, movingAverageCalculator: SimpleMovingAve
 
   private[this] def updateBit(bitIndex: Integer, newValueForIndex: Char) = {
 
-    target.chromosome = target.chromosome.substring(0, bitIndex) +
+    targetTicker.chromosome = targetTicker.chromosome.substring(0, bitIndex) +
       newValueForIndex +
-      target.chromosome.substring(bitIndex + 1)
+      targetTicker.chromosome.substring(bitIndex + 1)
   }
 }

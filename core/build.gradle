@@ -17,6 +17,8 @@ publishing {
 dependencies {
 
     compile 'org.mongodb.scala:mongo-scala-driver_2.11:1.2.1'
+
+    testCompile "de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0"
 }
 
 apply from: "../itest.gradle"
