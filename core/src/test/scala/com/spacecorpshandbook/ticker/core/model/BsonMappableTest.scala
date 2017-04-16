@@ -54,7 +54,7 @@ class BsonMappableTest extends FlatSpec
 
   it should "store a child type for each instantiated sub-type" in {
 
-    dumboMappable.getMappableFields.size should be(3)
+    dumboMappable.getMappableFields.size should be(2)
   }
 
   it should "return method symbols for a concrete type" in {
@@ -74,7 +74,7 @@ class AbsonMappableDumbo extends BsonMappable[AbsonMappableDumbo] {
   @BeanProperty
   var donald: Int = 0
 
-  @beans.BeanProperty
+  @BeanProperty
   var goofy: Seq[AnyRef] = Seq()
 }
 
@@ -86,6 +86,6 @@ class AbsonMappableDummy extends BsonMappable[AbsonMappableDummy] {
   @BeanProperty
   var b: Int = 0
 
-  @beans.BeanProperty
+  @BeanProperty
   var c: Seq[AnyRef] = Seq()
 }
