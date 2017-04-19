@@ -50,8 +50,6 @@ class DecoratorServiceTest extends AsyncFlatSpec
     chromosomeEncoderStub = stub[ChromosomeEncoder]
     (chromosomeEncoderStub.mapFiveDaySmaCrossingTenDaySma _).when(*, *).returns(decoratedTicker)
 
-    (persistenceStub.update _).when(decoratedTicker).returns(updateFuture)
-
     decoratorService = new DecoratorService(persistenceStub, chromosomeEncoderStub)
 
     val tickerDecoratedFuture = decoratorService.addChromosome(originalTicker)
@@ -78,7 +76,7 @@ class DecoratorServiceTest extends AsyncFlatSpec
 
     setupDone map { _ =>
 
-      (persistenceStub.update _).verify(decoratedTicker)
+      (persistenceStub.replace _).verify(decoratedTicker)
       succeed
     }
   }

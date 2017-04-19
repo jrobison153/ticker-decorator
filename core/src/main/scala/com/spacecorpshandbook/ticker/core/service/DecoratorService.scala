@@ -33,7 +33,11 @@ class DecoratorService(persistence: Persistence,
 
         val decoratedTicker = chromosomeEncoder.mapFiveDaySmaCrossingTenDaySma(ticker, tickers)
 
-        persistence update decoratedTicker
+        persistence replace decoratedTicker
+
+        Future {
+          decoratedTicker
+        }
 
       }
     } yield {

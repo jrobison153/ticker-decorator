@@ -3,10 +3,13 @@ package com.spacecorpshandbook.ticker.core.io.db
 import java.time.{LocalDateTime, ZoneOffset}
 import java.util.Date
 
+import com.mongodb.client.result.UpdateResult
 import com.spacecorpshandbook.ticker.core.constant.Database._
-import com.spacecorpshandbook.ticker.core.map.BsonToBsonMappable
+import com.spacecorpshandbook.ticker.core.map.{BsonMappableToBson, BsonToBsonMappable}
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import org.bson.conversions.Bson
+import org.bson.types.ObjectId
+import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Sorts._
 import org.mongodb.scala.{MongoCollection, MongoDatabase}
@@ -15,9 +18,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Provides higher order search functions over the database
+  *
   */
 class TickerPersistence(private var dbConnection: MongoDatabase) extends Persistence {
 
+  /*
+  TODO: replace method doesn't seem to fit, possibly refactor out
+   */
 
   private var id: String = ""
   private var limitDays: Int = 365
@@ -32,13 +39,19 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
       .getDefaultDatabase
       .getCollection(STOCK_TICKER_COLLECTION)
 
-    val filter: Bson = buildFilter
+    val findFuture = buildFilter match {
 
-    val findFuture = tickerCollection
-      .find(filter)
-      .limit(limitDays)
-      .sort(descending("date"))
-      .toFuture
+      case Some(filter) => tickerCollection
+        .find(filter)
+        .limit(limitDays)
+        .sort(descending("date"))
+        .toFuture
+      case None => tickerCollection
+        .find()
+        .limit(limitDays)
+        .sort(descending("date"))
+        .toFuture
+    }
 
     findFuture map { documents =>
 
@@ -51,24 +64,23 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
     }
   }
 
-  def buildFilter: Bson = {
+  def replace(ticker: Ticker): Future[UpdateResult] = {
 
-    var filtersToApply: Seq[Bson] = Seq()
+    val tickerCollection: MongoCollection[Document] = MongoConnection
+      .getDefaultDatabase
+      .getCollection(STOCK_TICKER_COLLECTION)
 
-    if(tickersBeforeDate != null) {
+    implicit val ec = ExecutionContext.global
 
-      val searchDate = Date.from(tickersBeforeDate.toInstant(ZoneOffset.UTC))
-      filtersToApply = filtersToApply :+ lte("date", searchDate)
+    val tickerAsDocument = BsonMappableToBson.map(ticker)
+    val objId = new ObjectId(ticker.id)
+
+    val updateFuture = tickerCollection.replaceOne(equal("_id", objId), tickerAsDocument).toFuture
+
+    updateFuture map { result =>
+
+      result.head
     }
-
-    if (!tickerSymbol.isEmpty) {
-
-      filtersToApply = filtersToApply :+ equal("ticker", tickerSymbol)
-    }
-
-    val filter: Bson = and(filtersToApply: _*)
-
-    filter
   }
 
   def symbol(tickerSymbol: String): TickerPersistence = {
@@ -99,24 +111,33 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
     this
   }
 
-  def update(ticker: Ticker) : Future[Ticker] = {
-//
-//    val tickerCollection: MongoCollection[Ticker] = MongoConnection
-//      .getDefaultDatabase
-//      .getCollection(STOCK_TICKER_COLLECTION)
-//
-//    val filter: Bson = buildFilter
-//
-//    tickerCollection.updateOne(filter, )
+  private def buildFilter: Option[Bson] = {
 
-    implicit val ec = ExecutionContext.global
+    var filtersToApply: Seq[Bson] = Seq()
 
-    Future {
+    if (tickersBeforeDate != null) {
 
-      new Ticker
+      val searchDate = Date.from(tickersBeforeDate.toInstant(ZoneOffset.UTC))
+      filtersToApply = filtersToApply :+ lte("date", searchDate)
     }
-  }
 
+    if (!tickerSymbol.isEmpty) {
+
+      filtersToApply = filtersToApply :+ equal("ticker", tickerSymbol)
+    }
+
+    if (filtersToApply.nonEmpty) {
+
+      val filter: Bson = and(filtersToApply: _*)
+
+      Some(filter)
+    }
+    else {
+
+      None
+    }
+
+  }
 }
 
 object TickerPersistence {

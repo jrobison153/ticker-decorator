@@ -9,12 +9,12 @@ class BsonMappableTest extends FlatSpec
   with Matchers
   with BeforeAndAfter {
 
-  var mappable: AbsonMappableDummy = _
+  var dummyMappable: AbsonMappableDummy = _
   var dumboMappable: AbsonMappableDumbo = _
 
   before {
 
-    mappable = new AbsonMappableDummy
+    dummyMappable = new AbsonMappableDummy
 
     dumboMappable = new AbsonMappableDumbo
 
@@ -24,14 +24,14 @@ class BsonMappableTest extends FlatSpec
 
   it should "store the child type in a hash map" in {
 
-    val declsForType = mappable.getMappableFields(ru.typeOf[AbsonMappableDummy].hashCode)
+    val declsForType = dummyMappable.getMappableFields(ru.typeOf[AbsonMappableDummy].hashCode)
 
     declsForType should not be empty
   }
 
   it should "have a mappable field for each BeanProperty" in {
 
-    val declsForType = mappable.getMappableFields(ru.typeOf[AbsonMappableDummy].hashCode)
+    val declsForType = dummyMappable.getMappableFields(ru.typeOf[AbsonMappableDummy].hashCode)
 
     declsForType should have length 3
     declsForType.filter(_.name.toString equals "a") should have length 1
@@ -47,19 +47,21 @@ class BsonMappableTest extends FlatSpec
     new AbsonMappableDummy
     new AbsonMappableDummy
 
-    val declsForType = mappable.getMappableFields(ru.typeOf[AbsonMappableDummy].hashCode)
+    val declsForType = dummyMappable.getMappableFields(ru.typeOf[AbsonMappableDummy].hashCode)
 
     declsForType should have length 3
   }
 
   it should "store a child type for each instantiated sub-type" in {
 
-    dumboMappable.getMappableFields.size should be(2)
+    dumboMappable.getMyTypeMappableFields should not be empty
+    dummyMappable.getMyTypeMappableFields should not be empty
+
   }
 
   it should "return method symbols for a concrete type" in {
 
-    val declsForType = mappable.getMyTypeMappableFields
+    val declsForType = dummyMappable.getMyTypeMappableFields
 
     declsForType should have length 3
   }

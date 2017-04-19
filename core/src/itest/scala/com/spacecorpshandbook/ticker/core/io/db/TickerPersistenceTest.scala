@@ -172,9 +172,9 @@ class TickerPersistenceTest extends AsyncFlatSpec
     }
   }
 
-  behavior of "database update"
+  behavior of "database replace"
 
-  it should "eventually return the ticker that was updated in the database" in {
+  it should "eventually update the ticker in the database" in {
 
     val newChromosomeValue = "not a real chromosome but easy to validate in update test"
 
@@ -187,7 +187,7 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
         tickerToUpdate.chromosome = newChromosomeValue
 
-        persistence.update(tickerToUpdate)
+        persistence.replace(tickerToUpdate)
       }
       updatedTickers <- persistence.id(tickers.head.id).search()
 
