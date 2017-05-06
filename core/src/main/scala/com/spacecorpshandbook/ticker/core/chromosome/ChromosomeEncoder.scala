@@ -1,6 +1,6 @@
 package com.spacecorpshandbook.ticker.core.chromosome
 
-import com.spacecorpshandbook.ticker.core.calculator.SimpleMovingAverageCalculator
+import com.spacecorpshandbook.ticker.core.calculator.MovingAverageCalculator
 import com.spacecorpshandbook.ticker.core.constant.ChromosomeDecoder._
 import com.spacecorpshandbook.ticker.core.model.Ticker
 
@@ -9,7 +9,7 @@ import com.spacecorpshandbook.ticker.core.model.Ticker
   *
   * @param movingAverageCalculator
   */
-class ChromosomeEncoder(movingAverageCalculator: SimpleMovingAverageCalculator) {
+class ChromosomeEncoder(movingAverageCalculator: MovingAverageCalculator) {
 
 
   var targetTicker: Ticker = _

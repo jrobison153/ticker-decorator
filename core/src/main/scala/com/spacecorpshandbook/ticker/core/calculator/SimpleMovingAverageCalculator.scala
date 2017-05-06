@@ -5,7 +5,7 @@ import com.spacecorpshandbook.ticker.core.model.Ticker
 /**
   * Calculate simple moving averages
   */
-class SimpleMovingAverageCalculator {
+class SimpleMovingAverageCalculator extends MovingAverageCalculator {
 
   def calculateForDays(tickers: Seq[Ticker], numberOfDays: Int) : BigDecimal = {
 

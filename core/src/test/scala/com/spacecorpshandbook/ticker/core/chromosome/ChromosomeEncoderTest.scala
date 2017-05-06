@@ -1,34 +1,27 @@
 package com.spacecorpshandbook.ticker.core.chromosome
 
-import com.spacecorpshandbook.ticker.core.calculator.SimpleMovingAverageCalculator
 import com.spacecorpshandbook.ticker.core.constant.ChromosomeDecoder._
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import org.scalamock.scalatest.MockFactory
+import com.spacecorpshandbook.ticker.core.stubs.{AlwaysGreaterMovingAverageCalculatorStub, AlwaysLesserMovingAverageCalculatorStub}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ChromosomeEncoderTest extends FlatSpec
-  with Matchers
-  with MockFactory {
+  with Matchers {
 
-  trait Setup {
-
-    var movingAverageCalculatorStub: SimpleMovingAverageCalculator = _
-  }
-
-  trait FiveDaySmaSetup extends Setup {
-
-    movingAverageCalculatorStub = stub[SimpleMovingAverageCalculator]
+  trait FiveDaySmaSetup {
 
     val ticker = new Ticker
     val history = Seq(new Ticker, new Ticker)
     var encoder: ChromosomeEncoder = _
 
-    def setup(fiveDaySma: BigDecimal, smaBeingCrossedSma: BigDecimal, smaBeingCrossed: Int): Unit = {
+    def setupForAlwaysCrossingUp(numberOfDays: Int): Unit = {
 
-      (movingAverageCalculatorStub.calculateForDays _).when(*, 5).returns(fiveDaySma)
-      (movingAverageCalculatorStub.calculateForDays _).when(*, smaBeingCrossed).returns(smaBeingCrossedSma)
+      encoder = new ChromosomeEncoder(AlwaysGreaterMovingAverageCalculatorStub(numberOfDays))
+    }
 
-      encoder = new ChromosomeEncoder(movingAverageCalculatorStub)
+    def setupForAlwaysCrossingDown(numberOfDays: Int): Unit = {
+
+      encoder = new ChromosomeEncoder(AlwaysLesserMovingAverageCalculatorStub(numberOfDays))
     }
 
     def setBit(bitIndex: Int, newValueForIndex: Char): Unit = {
@@ -45,11 +38,7 @@ class ChromosomeEncoderTest extends FlatSpec
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('0')
 
-    val smaToCross = 10
-    val fasterSma = 6.0
-    val slowerSma = 3.0
-
-    setup(fasterSma, slowerSma, smaToCross)
+    setupForAlwaysCrossingUp(5)
     encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('1')
@@ -60,11 +49,7 @@ class ChromosomeEncoderTest extends FlatSpec
     setBit(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP, '1')
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('1')
 
-    val smaToCross = 10
-    val fasterSma = 6.0
-    val slowerSma = 3.0
-
-    setup(slowerSma, fasterSma, smaToCross)
+    setupForAlwaysCrossingDown(5)
     encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('0')
@@ -74,12 +59,7 @@ class ChromosomeEncoderTest extends FlatSpec
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('0')
 
-    val smaToCross = 20
-    val fasterSma = 6.0
-    val slowerSma = 3.0
-
-    setup(fasterSma, slowerSma, smaToCross)
-
+    setupForAlwaysCrossingUp(5)
     encoder.mapFiveDaySmaCrossingTwentyDaySma(ticker, history)
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('1')
@@ -90,12 +70,7 @@ class ChromosomeEncoderTest extends FlatSpec
     setBit(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP, '1')
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('1')
 
-    val smaToCross = 20
-    val slowerSma = 3.0
-    val fasterSma = 6.0
-
-    setup(slowerSma, fasterSma, smaToCross)
-
+    setupForAlwaysCrossingDown(5)
     encoder.mapFiveDaySmaCrossingTwentyDaySma(ticker, history)
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('0')
