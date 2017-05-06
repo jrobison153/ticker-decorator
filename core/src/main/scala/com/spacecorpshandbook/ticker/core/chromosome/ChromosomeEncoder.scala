@@ -11,7 +11,12 @@ import com.spacecorpshandbook.ticker.core.model.Ticker
   */
 class ChromosomeEncoder(movingAverageCalculator: SimpleMovingAverageCalculator) {
 
+
   var targetTicker: Ticker = _
+
+  var tickerHistory: Seq[Ticker] = _
+
+  var bitToUpdate: Int = _
 
   /**
     *
@@ -24,31 +29,45 @@ class ChromosomeEncoder(movingAverageCalculator: SimpleMovingAverageCalculator) 
   def mapFiveDaySmaCrossingTenDaySma(target: Ticker, history: Seq[Ticker]): Ticker = {
 
     targetTicker = target
+    tickerHistory = history
+    bitToUpdate = FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP
 
-    updateFiveDayMovingAverageBit(history)
+    updateMovingAverageBit(5, 10)
 
     targetTicker
   }
 
-  private[this] def updateFiveDayMovingAverageBit(tickerHistory: Seq[Ticker]) = {
 
-    val fiveDaySimpleMovingAverage = movingAverageCalculator.calculateForDays(tickerHistory, 5)
-    val tenDaySimpleMovingAverage = movingAverageCalculator.calculateForDays(tickerHistory, 10)
+  def mapFiveDaySmaCrossingTwentyDaySma(target: Ticker, history: Seq[Ticker]): Ticker = {
 
-    if (fiveDaySimpleMovingAverage >= tenDaySimpleMovingAverage) {
+    targetTicker = target
+    tickerHistory = history
+    bitToUpdate = FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP
 
-      updateBit(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP, '1')
+    updateMovingAverageBit(5, 20)
+
+    targetTicker
+  }
+
+  private[this] def updateMovingAverageBit(subjectMovingAverage: Int, movingAverageToCross: Int) = {
+
+    val subjectMovingAverageValue = movingAverageCalculator.calculateForDays(tickerHistory, subjectMovingAverage)
+    val movingAverageToCrossValue = movingAverageCalculator.calculateForDays(tickerHistory, movingAverageToCross)
+
+    if (subjectMovingAverageValue >= movingAverageToCrossValue) {
+
+      updateBit('1')
     }
     else {
 
-      updateBit(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP, '0')
+      updateBit('0')
     }
   }
 
-  private[this] def updateBit(bitIndex: Integer, newValueForIndex: Char) = {
+  private[this] def updateBit(newValueForIndex: Char) = {
 
-    targetTicker.chromosome = targetTicker.chromosome.substring(0, bitIndex) +
+    targetTicker.chromosome = targetTicker.chromosome.substring(0, bitToUpdate) +
       newValueForIndex +
-      targetTicker.chromosome.substring(bitIndex + 1)
+      targetTicker.chromosome.substring(bitToUpdate + 1)
   }
 }

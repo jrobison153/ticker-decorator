@@ -49,6 +49,7 @@ class DecoratorServiceTest extends AsyncFlatSpec
 
     chromosomeEncoderStub = stub[ChromosomeEncoder]
     (chromosomeEncoderStub.mapFiveDaySmaCrossingTenDaySma _).when(*, *).returns(decoratedTicker)
+    (chromosomeEncoderStub.mapFiveDaySmaCrossingTwentyDaySma _).when(*, *).returns(decoratedTicker)
 
     decoratorService = new DecoratorService(persistenceStub, chromosomeEncoderStub)
 
@@ -70,6 +71,17 @@ class DecoratorServiceTest extends AsyncFlatSpec
     }
   }
 
+  it should "Map the the 5 day SMA crossing 20 day SMA bit of the chromosome" in {
+
+    val setupDone: Future[Ticker] = setup()
+
+    setupDone map { _ =>
+
+      (chromosomeEncoderStub.mapFiveDaySmaCrossingTwentyDaySma _).verify(decoratedTicker, dummyTickerSeq)
+      succeed
+    }
+  }
+
   it should "write the updated ticker to the database" in {
 
     val setupDone = setup()
@@ -80,5 +92,4 @@ class DecoratorServiceTest extends AsyncFlatSpec
       succeed
     }
   }
-
 }

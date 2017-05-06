@@ -31,7 +31,8 @@ class DecoratorService(persistence: Persistence,
         .search()
       updatedTicker <- {
 
-        val decoratedTicker = chromosomeEncoder.mapFiveDaySmaCrossingTenDaySma(ticker, tickers)
+        var decoratedTicker = chromosomeEncoder.mapFiveDaySmaCrossingTenDaySma(ticker, tickers)
+        decoratedTicker = chromosomeEncoder.mapFiveDaySmaCrossingTwentyDaySma(decoratedTicker, tickers)
 
         persistence replace decoratedTicker
 

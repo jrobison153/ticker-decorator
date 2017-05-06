@@ -21,14 +21,14 @@ class ChromosomeEncoderTest extends FlatSpec
 
     val ticker = new Ticker
     val history = Seq(new Ticker, new Ticker)
+    var encoder: ChromosomeEncoder = _
 
-    def setup(fasterSma: BigDecimal, slowerSma: BigDecimal): Unit = {
+    def setup(fiveDaySma: BigDecimal, smaBeingCrossedSma: BigDecimal, smaBeingCrossed: Int): Unit = {
 
-      (movingAverageCalculatorStub.calculateForDays _).when(*, 5).returns(fasterSma)
-      (movingAverageCalculatorStub.calculateForDays _).when(*, 10).returns(slowerSma)
+      (movingAverageCalculatorStub.calculateForDays _).when(*, 5).returns(fiveDaySma)
+      (movingAverageCalculatorStub.calculateForDays _).when(*, smaBeingCrossed).returns(smaBeingCrossedSma)
 
-      val encoder = new ChromosomeEncoder(movingAverageCalculatorStub)
-      encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
+      encoder = new ChromosomeEncoder(movingAverageCalculatorStub)
     }
 
     def setBit(bitIndex: Int, newValueForIndex: Char): Unit = {
@@ -45,7 +45,12 @@ class ChromosomeEncoderTest extends FlatSpec
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('0')
 
-    setup(6.0, 3.0)
+    val smaToCross = 10
+    val fasterSma = 6.0
+    val slowerSma = 3.0
+
+    setup(fasterSma, slowerSma, smaToCross)
+    encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('1')
   }
@@ -55,8 +60,45 @@ class ChromosomeEncoderTest extends FlatSpec
     setBit(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP, '1')
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('1')
 
-    setup(3.0, 6.0)
+    val smaToCross = 10
+    val fasterSma = 6.0
+    val slowerSma = 3.0
+
+    setup(slowerSma, fasterSma, smaToCross)
+    encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
 
     ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('0')
   }
+
+  it should "Set the 5 day SMA crossing up over the 20 day SMA bit to 1 when it does cross up" in new FiveDaySmaSetup {
+
+    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('0')
+
+    val smaToCross = 20
+    val fasterSma = 6.0
+    val slowerSma = 3.0
+
+    setup(fasterSma, slowerSma, smaToCross)
+
+    encoder.mapFiveDaySmaCrossingTwentyDaySma(ticker, history)
+
+    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('1')
+  }
+
+  it should "Set the 5 day SMA crossing up over the 20 day SMA bit to 0 when it crosses down" in new FiveDaySmaSetup {
+
+    setBit(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP, '1')
+    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('1')
+
+    val smaToCross = 20
+    val slowerSma = 3.0
+    val fasterSma = 6.0
+
+    setup(slowerSma, fasterSma, smaToCross)
+
+    encoder.mapFiveDaySmaCrossingTwentyDaySma(ticker, history)
+
+    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('0')
+  }
+
 }
