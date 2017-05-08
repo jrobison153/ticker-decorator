@@ -1,6 +1,6 @@
 package com.spacecorpshandbook.ticker.core.service
 
-import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeEncoder
+import com.spacecorpshandbook.ticker.core.chromosome.{ChromosomeDecoder, Encoder}
 import com.spacecorpshandbook.ticker.core.io.db.Persistence
 import com.spacecorpshandbook.ticker.core.model.Ticker
 
@@ -9,8 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Provides high level orchestration of the process for updating a ticker
   */
-class DecoratorService(persistence: Persistence,
-                       chromosomeEncoder: ChromosomeEncoder) {
+class DecoratorService(persistence: Persistence, chromosomeEncoder: Encoder) {
 
   implicit val ec = ExecutionContext.global
 
@@ -31,15 +30,19 @@ class DecoratorService(persistence: Persistence,
         .search()
       updatedTicker <- {
 
-        var decoratedTicker = chromosomeEncoder.mapFiveDaySmaCrossingTenDaySma(ticker, tickers)
-        decoratedTicker = chromosomeEncoder.mapFiveDaySmaCrossingTwentyDaySma(decoratedTicker, tickers)
+        var decoratedTicker = chromosomeEncoder.mapMovingAverageBits(ticker,
+          tickers, ChromosomeDecoder.SMA_CROSSING_UP_ENCODING_MAP)
 
-        persistence replace decoratedTicker
+        decoratedTicker = chromosomeEncoder.mapMovingAverageBits(decoratedTicker, tickers,
+          ChromosomeDecoder.SMA_CROSSING_DOWN_ENCODING_MAP)
 
         Future {
           decoratedTicker
         }
+      }
+      updateResult <- {
 
+        persistence replace updatedTicker
       }
     } yield {
 

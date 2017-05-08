@@ -7,5 +7,7 @@ import com.spacecorpshandbook.ticker.core.model.Ticker
   */
 trait MovingAverageCalculator {
 
-  def calculateForDays(tickers: Seq[Ticker], numberOfDays: Int) : BigDecimal
+  def calculateForDays(tickers: Seq[Ticker], numberOfDays: Int): Option[BigDecimal]
+
+  def calculatePreviousDayForDays(tickers: Seq[Ticker], numberOfDays: Int): Option[BigDecimal]
 }

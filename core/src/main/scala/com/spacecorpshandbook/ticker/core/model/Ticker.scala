@@ -2,7 +2,7 @@ package com.spacecorpshandbook.ticker.core.model
 
 import java.time.LocalDateTime
 
-import com.spacecorpshandbook.ticker.core.constant.ChromosomeDecoder
+import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
 
 import scala.beans.BeanProperty
 import scala.reflect.runtime.{universe => ru}

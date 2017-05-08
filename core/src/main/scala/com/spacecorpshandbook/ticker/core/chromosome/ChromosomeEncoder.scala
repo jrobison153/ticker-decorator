@@ -1,7 +1,6 @@
 package com.spacecorpshandbook.ticker.core.chromosome
 
 import com.spacecorpshandbook.ticker.core.calculator.MovingAverageCalculator
-import com.spacecorpshandbook.ticker.core.constant.ChromosomeDecoder._
 import com.spacecorpshandbook.ticker.core.model.Ticker
 
 /**
@@ -9,65 +8,122 @@ import com.spacecorpshandbook.ticker.core.model.Ticker
   *
   * @param movingAverageCalculator
   */
-class ChromosomeEncoder(movingAverageCalculator: MovingAverageCalculator) {
-
+class ChromosomeEncoder(movingAverageCalculator: MovingAverageCalculator) extends Encoder {
 
   var targetTicker: Ticker = _
 
   var tickerHistory: Seq[Ticker] = _
 
-  var bitToUpdate: Int = _
-
-  /**
-    *
-    * Set the 5 day SMA crossed 10 day SMA bit based on the historical performance of this equity
-    *
-    * @param target  - ticker who's chromosome should be updated
-    * @param history - historical ticker data to be used to calculate chromosome values
-    * @return the updated ticker
-    */
-  def mapFiveDaySmaCrossingTenDaySma(target: Ticker, history: Seq[Ticker]): Ticker = {
+  def mapMovingAverageBits(target: Ticker, history: Seq[Ticker], encodingMap: Seq[DayCalculatedBitEncoding]): Ticker = {
 
     targetTicker = target
     tickerHistory = history
-    bitToUpdate = FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP
 
-    updateMovingAverageBit(5, 10)
+    encodingMap.foreach(encoding => {
+
+      updateMovingAverageBit(encoding)
+    })
 
     targetTicker
   }
 
+  private[this] def updateMovingAverageBit(encoding: DayCalculatedBitEncoding) = {
 
-  def mapFiveDaySmaCrossingTwentyDaySma(target: Ticker, history: Seq[Ticker]): Ticker = {
+    val crossingMovingAverageValue = movingAverageCalculator
+      .calculateForDays(tickerHistory, encoding.crossingMovingAverage)
 
-    targetTicker = target
-    tickerHistory = history
-    bitToUpdate = FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP
+    val previousMovingAverageValue = movingAverageCalculator
+      .calculatePreviousDayForDays(tickerHistory, encoding.crossingMovingAverage)
 
-    updateMovingAverageBit(5, 20)
+    val movingAverageToCrossValue = movingAverageCalculator
+      .calculateForDays(tickerHistory, encoding.numberOfDaysInCalculation)
 
-    targetTicker
+    encoding match {
+      case crossingUp: CrossingUpDayCalculatedBitEncoding => updateCrossingUpBit(encoding, crossingMovingAverageValue,
+        previousMovingAverageValue, movingAverageToCrossValue)
+      case crossingDown: CrossingDownDayCalculatedBitEncoding => updateCrossingDownBit(encoding, crossingMovingAverageValue,
+        previousMovingAverageValue, movingAverageToCrossValue)
+    }
   }
 
-  private[this] def updateMovingAverageBit(subjectMovingAverage: Int, movingAverageToCross: Int) = {
+  private def updateCrossingUpBit(encoding: DayCalculatedBitEncoding, maybeCrossingMovingAverage: Option[BigDecimal],
+                                  maybePreviousMovingAverageValue: Option[BigDecimal],
+                                  maybeMovingAverageToCross: Option[BigDecimal]) = {
 
-    val subjectMovingAverageValue = movingAverageCalculator.calculateForDays(tickerHistory, subjectMovingAverage)
-    val movingAverageToCrossValue = movingAverageCalculator.calculateForDays(tickerHistory, movingAverageToCross)
+    (maybeCrossingMovingAverage, maybeMovingAverageToCross, maybePreviousMovingAverageValue) match {
 
-    if (subjectMovingAverageValue >= movingAverageToCrossValue) {
+      case (Some(crossingMovingAverageValue), Some(movingAverageToCrossValue), Some(previousMovingAverageValue)) =>
 
-      updateBit('1')
+        if (isMovingAverageCrossingUp(crossingMovingAverageValue, movingAverageToCrossValue,
+          previousMovingAverageValue)) {
+
+          updateBit('1', encoding.bitIndex)
+        }
+        else {
+
+          updateBit('0', encoding.bitIndex)
+        }
+
+      case _ => updateBit('0', encoding.bitIndex)
+    }
+  }
+
+  private def updateCrossingDownBit(encoding: DayCalculatedBitEncoding, maybeCrossingMovingAverage: Option[BigDecimal],
+                                    maybePreviousMovingAverageValue: Option[BigDecimal],
+                                    maybeMovingAverageToCross: Option[BigDecimal]) = {
+
+    (maybeCrossingMovingAverage, maybeMovingAverageToCross, maybePreviousMovingAverageValue) match {
+
+      case (Some(crossingMovingAverageValue), Some(movingAverageToCrossValue), Some(previousMovingAverageValue)) =>
+
+        if (isMovingAverageCrossingDown(crossingMovingAverageValue, movingAverageToCrossValue,
+          previousMovingAverageValue)) {
+
+          updateBit('1', encoding.bitIndex)
+        }
+        else {
+
+          updateBit('0', encoding.bitIndex)
+        }
+
+      case _ => updateBit('0', encoding.bitIndex)
+    }
+  }
+
+  private[this] def updateBit(newValueForIndex: Char, bitIndex: Int) = {
+
+    targetTicker.chromosome = targetTicker.chromosome.substring(0, bitIndex) +
+      newValueForIndex +
+      targetTicker.chromosome.substring(bitIndex + 1)
+  }
+
+  private[this] def isMovingAverageCrossingUp(crossingMovingAverageValue: BigDecimal,
+                                              movingAverageToCrossValue: BigDecimal,
+                                              previousMovingAverageValue: BigDecimal): Boolean = {
+
+    if ((previousMovingAverageValue < movingAverageToCrossValue)
+      && (crossingMovingAverageValue >= movingAverageToCrossValue)) {
+
+      true
     }
     else {
 
-      updateBit('0')
+      false
     }
   }
 
-  private[this] def updateBit(newValueForIndex: Char) = {
 
-    targetTicker.chromosome = targetTicker.chromosome.substring(0, bitToUpdate) +
-      newValueForIndex +
-      targetTicker.chromosome.substring(bitToUpdate + 1)
+  private[this] def isMovingAverageCrossingDown(crossingMovingAverageValue: BigDecimal,
+                                                movingAverageToCrossValue: BigDecimal,
+                                                previousMovingAverageValue: BigDecimal): Boolean = {
+
+    if ((previousMovingAverageValue > movingAverageToCrossValue)
+      && (crossingMovingAverageValue <= movingAverageToCrossValue)) {
+
+      true
+    }
+    else {
+      false
+    }
   }
 }

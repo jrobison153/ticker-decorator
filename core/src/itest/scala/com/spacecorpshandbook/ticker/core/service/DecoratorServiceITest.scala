@@ -22,11 +22,6 @@ import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, Matchers}
 import scala.concurrent.Future
 import scala.io.Source
 
-
-/**
-  * Test Requirements
-  *  - Mongo database with test data available
-  */
 class DecoratorServiceITest extends AsyncFlatSpec
   with Matchers
   with BeforeAndAfter {

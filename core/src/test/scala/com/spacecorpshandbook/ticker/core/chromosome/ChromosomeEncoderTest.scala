@@ -1,28 +1,19 @@
 package com.spacecorpshandbook.ticker.core.chromosome
 
-import com.spacecorpshandbook.ticker.core.constant.ChromosomeDecoder._
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import com.spacecorpshandbook.ticker.core.stubs.{AlwaysGreaterMovingAverageCalculatorStub, AlwaysLesserMovingAverageCalculatorStub}
+import com.spacecorpshandbook.ticker.core.stub._
 import org.scalatest.{FlatSpec, Matchers}
 
 class ChromosomeEncoderTest extends FlatSpec
   with Matchers {
 
-  trait FiveDaySmaSetup {
+  trait SmaSetup {
 
+    var bitToEncode: DayCalculatedBitEncoding = _
+    var encoder: ChromosomeEncoder = _
+    var encodingMap: Seq[DayCalculatedBitEncoding] = _
     val ticker = new Ticker
     val history = Seq(new Ticker, new Ticker)
-    var encoder: ChromosomeEncoder = _
-
-    def setupForAlwaysCrossingUp(numberOfDays: Int): Unit = {
-
-      encoder = new ChromosomeEncoder(AlwaysGreaterMovingAverageCalculatorStub(numberOfDays))
-    }
-
-    def setupForAlwaysCrossingDown(numberOfDays: Int): Unit = {
-
-      encoder = new ChromosomeEncoder(AlwaysLesserMovingAverageCalculatorStub(numberOfDays))
-    }
 
     def setBit(bitIndex: Int, newValueForIndex: Char): Unit = {
 
@@ -30,50 +21,211 @@ class ChromosomeEncoderTest extends FlatSpec
         newValueForIndex +
         ticker.chromosome.substring(bitIndex + 1)
     }
+
+    def setAllChromosomeBitsTo(bitValue: Char) = encodingMap.foreach(encoding => setBit(encoding.bitIndex, bitValue))
   }
 
-  behavior of "A chromosome encoder"
+  trait SmaCrossingUpSetup extends SmaSetup {
 
-  it should "Set the 5 day SMA crossing up over the 10 day SMA bit to 1 when it does cross up" in new FiveDaySmaSetup {
-
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('0')
-
-    setupForAlwaysCrossingUp(5)
-    encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
-
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('1')
+    bitToEncode = CrossingUpDayCalculatedBitEncoding(0, 5, 10)
+    encodingMap = Seq(bitToEncode)
   }
 
-  it should "Set the 5 day SMA crossing up over the 10 day SMA bit to 0 when it does not cross up" in new FiveDaySmaSetup {
+  trait CrossUpSetup extends SmaCrossingUpSetup {
 
-    setBit(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP, '1')
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('1')
+    encoder = new ChromosomeEncoder(AlwaysCrossingUpMovingAverageCalculatorStub(bitToEncode.crossingMovingAverage))
 
-    setupForAlwaysCrossingDown(5)
-    encoder.mapFiveDaySmaCrossingTenDaySma(ticker, history)
-
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TEN_DAY_SMA_UP) should equal('0')
+    setAllChromosomeBitsTo('0')
   }
 
-  it should "Set the 5 day SMA crossing up over the 20 day SMA bit to 1 when it does cross up" in new FiveDaySmaSetup {
+  trait CrossUpEqualSetup extends SmaCrossingUpSetup {
 
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('0')
+    encoder = new ChromosomeEncoder(AlwaysCrossingUpEqualMovingAverageCalculatorStub(bitToEncode.crossingMovingAverage))
 
-    setupForAlwaysCrossingUp(5)
-    encoder.mapFiveDaySmaCrossingTwentyDaySma(ticker, history)
-
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('1')
+    setAllChromosomeBitsTo('0')
   }
 
-  it should "Set the 5 day SMA crossing up over the 20 day SMA bit to 0 when it crosses down" in new FiveDaySmaSetup {
+  trait AlreadyCrossedUpSetup extends SmaCrossingUpSetup {
 
-    setBit(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP, '1')
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('1')
+    encoder = new ChromosomeEncoder(PreviouslyCrossedUpMovingAverageCalculatorStub(bitToEncode.crossingMovingAverage))
 
-    setupForAlwaysCrossingDown(5)
-    encoder.mapFiveDaySmaCrossingTwentyDaySma(ticker, history)
-
-    ticker.chromosome(FIVE_DAY_SMA_CROSSED_TWENTY_DAY_SMA_UP) should equal('0')
+    setAllChromosomeBitsTo('1')
   }
 
+  trait SmaCrossDownSetup extends SmaSetup {
+
+    bitToEncode = CrossingDownDayCalculatedBitEncoding(0, 5, 10)
+    encodingMap = Seq(bitToEncode)
+  }
+
+  trait CrossDownSetup extends SmaCrossDownSetup {
+
+    encoder = new ChromosomeEncoder(AlwaysCrossingDownMovingAverageCalculatorStub(bitToEncode.crossingMovingAverage))
+
+    setAllChromosomeBitsTo('0')
+  }
+
+  trait CrossDownEqualSetup extends SmaCrossDownSetup {
+
+    encoder = new ChromosomeEncoder(AlwaysCrossingDownEqualMovingAverageCalculatorStub(bitToEncode.crossingMovingAverage))
+
+    setAllChromosomeBitsTo('0')
+  }
+
+  trait AlreadyCrossedDownSetup extends SmaCrossDownSetup {
+
+    encoder = new ChromosomeEncoder(PreviouslyCrossedDownMovingAverageCalculatorStub(bitToEncode.crossingMovingAverage))
+
+    setAllChromosomeBitsTo('1')
+  }
+
+  abstract class InsufficientCurrentMovingAverageDataSetup(aBitToEncode: DayCalculatedBitEncoding) extends SmaSetup {
+
+    bitToEncode = aBitToEncode
+    encodingMap = Seq(bitToEncode)
+
+    encoder = new ChromosomeEncoder(InsufficientDataMovingAverageCalculatorStub(bitToEncode.crossingMovingAverage))
+
+    setAllChromosomeBitsTo('1')
+  }
+
+  abstract class InsufficientMovingAverageToCrossDataSetup(aBitToEncode: DayCalculatedBitEncoding) extends SmaSetup {
+
+    bitToEncode = aBitToEncode
+    encodingMap = Seq(bitToEncode)
+
+    encoder = new ChromosomeEncoder(InsufficientDataMovingAverageCalculatorStub(bitToEncode.numberOfDaysInCalculation))
+
+    setAllChromosomeBitsTo('1')
+  }
+
+  abstract class InsufficientPreviousDayMovingAverageDataSetup(aBitToEncode: DayCalculatedBitEncoding) extends SmaSetup {
+
+    bitToEncode = aBitToEncode
+    encodingMap = Seq(bitToEncode)
+
+    encoder = new ChromosomeEncoder(InsufficientDataPreviousDayMovingAverageCalculatorStub(bitToEncode.numberOfDaysInCalculation))
+
+    setAllChromosomeBitsTo('1')
+  }
+
+  behavior of "A chromosome encoder when mapping moving average crossing up bits"
+
+  it should "Set the SMA crossing up bit to 1 when the previous value is below the MA to cross and the current value is above it" in new CrossUpSetup {
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+
+    encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+  }
+
+  it should "Set the SMA crossing up bit to 1 when the previous value is below the MA to cross and the current value is equal it" in new CrossUpEqualSetup {
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+
+    encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+  }
+
+  it should "Set the SMA crossing up bit to 0 when the previous value is above the MA to cross" in new AlreadyCrossedUpSetup {
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+    encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+  }
+
+  it should "Set the SMA crossing up bit to 0 when there aren't enough days of data to calculate the current value" in
+    new InsufficientCurrentMovingAverageDataSetup(CrossingUpDayCalculatedBitEncoding(0, 5, 10)) {
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+      encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+    }
+
+  it should "Set the SMA crossing up bit to 0 when there aren't enough days of data to calculate the MA to cross" in
+    new InsufficientMovingAverageToCrossDataSetup(CrossingUpDayCalculatedBitEncoding(0, 5, 10)) {
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+      encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+    }
+
+  it should "Set the SMA crossing up bit to 0 when there aren't enough days of data to calculate the previous day MA" in
+    new InsufficientPreviousDayMovingAverageDataSetup(CrossingUpDayCalculatedBitEncoding(0, 5, 10)) {
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+      encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+    }
+
+  behavior of "A chromosome encoder when mapping moving average crossing down bits"
+
+  it should "Set the SMA crossing down bit to 1 when the previous value is above the MA to cross and the current value is below it" in new CrossDownSetup {
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+
+    encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+  }
+
+  it should "Set the SMA crossing down bit to 1 when the previous value is above the MA to cross and the current value is equal it" in new CrossDownEqualSetup {
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+
+    encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+  }
+
+  it should "Set the SMA crossing down bit to 0 when the previous value is below the MA to cross" in new AlreadyCrossedDownSetup {
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+    encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+    ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+  }
+
+  it should "Set the SMA crossing up bit to 0 when there aren't enough days of data to calculate the current value" in
+    new InsufficientCurrentMovingAverageDataSetup(CrossingDownDayCalculatedBitEncoding(0, 5, 10)) {
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+      encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+    }
+
+  it should "Set the SMA crossing up bit to 0 when there aren't enough days of data to calculate the MA to cross" in
+    new InsufficientMovingAverageToCrossDataSetup(CrossingDownDayCalculatedBitEncoding(0, 5, 10)) {
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+      encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+    }
+
+  it should "Set the SMA crossing up bit to 0 when there aren't enough days of data to calculate the previous day MA" in
+    new InsufficientPreviousDayMovingAverageDataSetup(CrossingDownDayCalculatedBitEncoding(0, 5, 10)) {
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('1')
+
+      encoder.mapMovingAverageBits(ticker, history, encodingMap)
+
+      ticker.chromosome(bitToEncode.bitIndex) should equal('0')
+    }
 }
+
+
