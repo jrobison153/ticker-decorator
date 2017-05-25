@@ -16,5 +16,6 @@ trait Persistence {
   def symbol(tickerSymbol: String): Persistence
   def beforeDate(date: LocalDateTime): Persistence
   def limit(numDays: Int): Persistence
+  def id(id: String): Persistence
   def replace(ticker: Ticker): Future[UpdateResult]
 }

@@ -4,20 +4,55 @@ import org.mongodb.scala.{MongoClient, MongoDatabase}
 
 object MongoConnection {
 
-  // TODO: this needs to be configurable
-  private val DEFAULT_DATABASE_NAME = "testStockData"
+  var TICKER_DB_NAME_ENV_VAR = "TICKER_DB_NAME"
+  val TICKER_DB_PORT_ENV_VAR = "TICKER_DB_PORT"
+  val TICKER_DB_HOST_ENV_VAR = "TICKER_DB_HOST"
 
-  // TODO: this needs to be configurable
-  val mongoClient: MongoClient = MongoClient(s"mongodb://localhost")
+  def isNonNullOrEmpty(value: String) = value != null && value.nonEmpty
+
+  val DATABASE_NAME: String = {
+
+    val envHold = System.getenv(TICKER_DB_NAME_ENV_VAR)
+
+    if (isNonNullOrEmpty(envHold)) {
+
+      envHold
+    } else {
+
+      "testStockData"
+    }
+  }
+
+  val PORT: Int = {
+
+    val envHold = System.getenv(TICKER_DB_PORT_ENV_VAR)
+
+    if (isNonNullOrEmpty(envHold)) {
+
+      envHold.toInt
+    } else {
+
+      12345
+    }
+  }
+
+  val HOST: String = {
+
+    val envHold = System.getenv(TICKER_DB_HOST_ENV_VAR)
+
+    if (isNonNullOrEmpty(envHold)) {
+
+      envHold
+    } else {
+
+      "localhost"
+    }
+  }
+
+  val mongoClient: MongoClient = MongoClient(s"mongodb://$HOST:$PORT")
 
   def getDefaultDatabase: MongoDatabase = {
 
-    mongoClient.getDatabase(DEFAULT_DATABASE_NAME)
+    mongoClient.getDatabase(DATABASE_NAME)
   }
-
-  def getDefaultDatabase(port: Int) : MongoDatabase = {
-
-    MongoClient(s"mongodb://localhost:$port").getDatabase(DEFAULT_DATABASE_NAME)
-  }
-
 }

@@ -40,6 +40,7 @@ case class PersistenceSpy() extends Persistence {
 
   override def limit(numDays: Int): Persistence = this
 
+  override def id(id: String): Persistence = this
 
   override def replace(ticker: Ticker): Future[UpdateResult] = {
 
@@ -52,6 +53,7 @@ case class PersistenceSpy() extends Persistence {
       result
     }
   }
+
 }
 
 private class DummyUpdateResult() extends UpdateResult {

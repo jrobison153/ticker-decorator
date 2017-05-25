@@ -2,68 +2,34 @@ package com.spacecorpshandbook.ticker.core.io.db
 
 import java.time.LocalDateTime
 
-import com.spacecorpshandbook.ticker.core.constant.Database._
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import de.flapdoodle.embed.mongo.config.{IMongodConfig, MongodConfigBuilder, Net}
-import de.flapdoodle.embed.mongo.distribution.Version
-import de.flapdoodle.embed.mongo.{MongodExecutable, MongodStarter}
-import de.flapdoodle.embed.process.runtime.Network
-import org.mongodb.scala.bson.collection.immutable.Document
-import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, Matchers, OneInstancePerTest}
-
-import scala.io.Source
+import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, BeforeAndAfterAll, Matchers}
 
 class TickerPersistenceTest extends AsyncFlatSpec
   with Matchers
-  with OneInstancePerTest
-  with BeforeAndAfter {
+  with BeforeAndAfter
+  with BeforeAndAfterAll
+  with TickerDatabaseSetup {
 
-  var mongodExecutable: MongodExecutable = _
   val ticker: Ticker = new Ticker
-  var persistence: TickerPersistence = _
 
-  before {
-    try {
-      val starter: MongodStarter = MongodStarter.getDefaultInstance
-      val bindIp: String = "localhost"
-      val port: Int = 12345
+  override def beforeAll() {
 
-      val mongodConfig: IMongodConfig = new MongodConfigBuilder()
-        .version(Version.Main.PRODUCTION)
-        .net(new Net(bindIp, port, Network.localhostIsIPv6()))
-        .build
+    super.beforeAll()
 
-      mongodExecutable = starter.prepare(mongodConfig)
-      mongodExecutable.start()
-
-      val mongoDb = MongoConnection.getDefaultDatabase(12345)
-      persistence = TickerPersistence(mongoDb)
-      val collection = mongoDb.getCollection(STOCK_TICKER_COLLECTION)
-
-      val tickerDataStream = getClass.getClassLoader.getResourceAsStream("tickerData.json")
-      Source.fromInputStream(tickerDataStream)
-
-      for (json <- Source.fromInputStream(tickerDataStream).getLines()) {
-
-        collection.insertOne(Document(json)).head()
-      }
-    }
-    catch {
-
-      case ex: Exception =>
-        if (mongodExecutable != null) {
-
-          mongodExecutable.stop()
-        }
-    }
+    databaseSetup
   }
 
-  after {
+  override def afterAll() {
 
-    if (mongodExecutable != null) {
+    databaseCleanup
 
-      mongodExecutable.stop()
-    }
+    super.afterAll()
+  }
+
+  before {
+
+    persistence = TickerPersistence(mongoDatabase)
   }
 
   behavior of "database search"
@@ -72,13 +38,12 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
     val numDaysOfData = 10
 
-    val searchDoneFuture = persistence
-      .symbol("A")
-      .limit(numDaysOfData)
-      .beforeDate(LocalDateTime.now)
-      .search()
+    for {
 
-    searchDoneFuture map { tickers =>
+      complete <- initDoneFuture
+      tickers <- persistence.symbol("A").limit(numDaysOfData).beforeDate(LocalDateTime.now).search()
+
+    } yield {
 
       assert(tickers.length == numDaysOfData)
     }
@@ -86,12 +51,13 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
   it should "eventually return 365 days of data if limit not specified" in {
 
-    val searchDoneFuture = persistence
-      .symbol("A")
-      .beforeDate(LocalDateTime.now)
-      .search()
 
-    searchDoneFuture map { tickers =>
+    for {
+
+      complete <- initDoneFuture
+      tickers <- persistence.symbol("A").beforeDate(LocalDateTime.now).search()
+
+    } yield {
 
       assert(tickers.length == 365)
     }
@@ -101,12 +67,12 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
     val numDaysOfData = 10
 
-    val searchDoneFuture = persistence
-      .symbol("A")
-      .limit(numDaysOfData)
-      .search()
+    for {
 
-    searchDoneFuture map { tickers =>
+      complete <- initDoneFuture
+      tickers <- persistence.symbol("A").limit(numDaysOfData).search()
+
+    } yield {
 
       assert(tickers.length == numDaysOfData)
     }
@@ -116,12 +82,12 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
     val numDaysOfData = 10
 
-    val searchDoneFuture = persistence
-      .limit(numDaysOfData)
-      .search()
+    for {
 
-    searchDoneFuture map { tickers =>
+      complete <- initDoneFuture
+      tickers <- persistence.limit(numDaysOfData).search()
 
+    } yield {
       assert(tickers.length == numDaysOfData)
     }
   }
@@ -130,13 +96,12 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
     val numDaysOfData = 10
 
-    val searchDoneFuture = persistence
-      .symbol("A")
-      .limit(numDaysOfData)
-      .beforeDate(LocalDateTime.now.minusYears(1000))
-      .search()
+    for {
 
-    searchDoneFuture map { tickers =>
+      complete <- initDoneFuture
+      tickers <- persistence.symbol("A").limit(numDaysOfData).beforeDate(LocalDateTime.now.minusYears(1000)).search()
+
+    } yield {
 
       assert(tickers.isEmpty)
     }
@@ -147,13 +112,11 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
     val numDaysOfData = 10
 
-    val searchDoneFuture = persistence
-      .symbol("I don't exist")
-      .limit(numDaysOfData)
-      .beforeDate(LocalDateTime.now)
-      .search()
+    for {
+      complete <- initDoneFuture
+      tickers <- persistence.symbol("I don't exist").limit(numDaysOfData).beforeDate(LocalDateTime.now).search()
 
-    searchDoneFuture map { tickers =>
+    } yield {
 
       assert(tickers.isEmpty)
     }
@@ -162,7 +125,7 @@ class TickerPersistenceTest extends AsyncFlatSpec
   it should "eventually return a ticker when searched for by id" in {
 
     for {
-
+      complete <- initDoneFuture
       tickers <- persistence.symbol("A").limit(1).search()
       tickersFoundbyId <- persistence.id(tickers.head.id).search()
 
@@ -180,6 +143,7 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
     for {
 
+      complete <- initDoneFuture
       tickers <- persistence.symbol("A").limit(1).search()
       updateResult <- {
 
