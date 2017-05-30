@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   * Provides high level orchestration of the process for updating a ticker
   */
-class DecoratorService(persistence: Persistence, chromosomeEncoder: Encoder) {
+class DecoratorService(persistence: Persistence, chromosomeEncoder: Encoder) extends TickerService {
 
   implicit val ec = ExecutionContext.global
 

@@ -1,22 +1,36 @@
 package com.spacecorpshandbook.ticker.spring.controller
 
+import java.util.concurrent.TimeUnit
+
 import com.spacecorpshandbook.ticker.core.model.{Ticker, TickerDecoratorResponse}
+import com.spacecorpshandbook.ticker.core.service.TickerService
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.{RequestBody, RequestMapping, RequestMethod, RestController}
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 @RestController
 @Configuration
 @EnableAutoConfiguration
 @RequestMapping(Array("/ticker"))
-class TickerDecoratorController {
+class TickerDecoratorController(decoratorService: TickerService) {
 
   @RequestMapping(value = Array("decorate"), method = Array(RequestMethod.POST))
-  def decorate(@RequestBody ticker: Ticker): TickerDecoratorResponse = {
+  def decorate(@RequestBody tickerToDecorate: Ticker): TickerDecoratorResponse = {
 
-    val response : TickerDecoratorResponse = new TickerDecoratorResponse()
+    val decorationDone: Future[Ticker] = decoratorService.addChromosome(tickerToDecorate)
 
-    response.setMessage("Symbol decorated: " + ticker.ticker)
+    /*
+    TODO: is there a better way than blocking the future? This would be easy in Node.
+     */
+    val updatedTicker = Await.result(decorationDone, Duration(30, TimeUnit.SECONDS))
+
+    val response: TickerDecoratorResponse = new TickerDecoratorResponse()
+
+    response.setMessage("Symbol decorated")
+    response.ticker = updatedTicker
 
     response
   }

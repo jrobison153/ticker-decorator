@@ -1,5 +1,6 @@
 package com.spacecorpshandbook.ticker.core.model
 
+
 import java.time.LocalDateTime
 
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
@@ -32,6 +33,9 @@ class Ticker extends BsonMappable[Ticker] {
 
   @BeanProperty
   var low: BigDecimal = _
+
+  @BeanProperty
+  var volume: BigDecimal = _
 
   @BeanProperty
   var chromosome: String = ChromosomeDecoder.DEFAULT_CHROMOSOME

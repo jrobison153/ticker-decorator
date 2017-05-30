@@ -33,4 +33,5 @@ dependencies {
     compile 'com.spacecorpshandbook.ticker:core:1.0.0-SNAPSHOT'
 
     testCompile 'io.rest-assured:spring-mock-mvc:3.0.1'
+    testCompile("org.springframework.boot:spring-boot-starter-test")
 }

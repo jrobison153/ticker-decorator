@@ -49,6 +49,8 @@ object MongoConnection {
     }
   }
 
+  System.out.println(s"Mongo Connection Url is mongodb://$HOST:$PORT")
+
   val mongoClient: MongoClient = MongoClient(s"mongodb://$HOST:$PORT")
 
   def getDefaultDatabase: MongoDatabase = {
