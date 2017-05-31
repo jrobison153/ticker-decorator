@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import com.spacecorpshandbook.ticker.core.service.DecoratorService
+import com.spacecorpshandbook.ticker.spring.stub.CreatesDefaultChromosomeDecoratorServiceStub
 import io.restassured.http.ContentType
 import io.restassured.module.mockmvc.RestAssuredMockMvc
 import io.restassured.module.mockmvc.RestAssuredMockMvc._
@@ -20,7 +21,7 @@ class TickerDecoratorControllerTest extends FlatSpec
 
   before {
 
-    val decoratorService: DecoratorService = new CreatesDefaultChromosomeDecoratorServiceStub(null, null)
+    val decoratorService: DecoratorService = new CreatesDefaultChromosomeDecoratorServiceStub
 
     RestAssuredMockMvc.standaloneSetup(new TickerDecoratorController(decoratorService))
   }

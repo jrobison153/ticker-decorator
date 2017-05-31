@@ -2,17 +2,26 @@ package com.spacecorpshandbook.ticker.lambda.handler
 
 import java.io.{InputStream, OutputStream}
 import java.util.HashMap
+import java.util.concurrent.TimeUnit
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.spacecorpshandbook.ticker.core.calculator.SimpleMovingAverageCalculator
+import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeEncoder
+import com.spacecorpshandbook.ticker.core.io.db.{MongoConnection, TickerPersistence}
 import com.spacecorpshandbook.ticker.core.model.{Ticker, TickerDecoratorResponse}
+import com.spacecorpshandbook.ticker.core.service.DecoratorService
 import com.spacecorpshandbook.ticker.lambda.proxy.ApiGatewayProxyResponse
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 /**
   * Amazon Lambda handler adapter for the ticker decorator application
   */
 class TickerDecoratorHandler {
 
+  var decoratorService: DecoratorService = _
   val objMapper: ObjectMapper = new ObjectMapper().findAndRegisterModules
 
   def decorateTicker(request: InputStream, response: OutputStream, context: Context): Unit = {
@@ -39,8 +48,17 @@ class TickerDecoratorHandler {
 
   private[this] def decorateTicker(ticker: Ticker): TickerDecoratorResponse = {
 
-    val decroatorResponse = new TickerDecoratorResponse
+    initializeDecoratorService
 
+    val decorationDone = decoratorService.addChromosome(ticker)
+
+    /*
+   TODO: is there a better way than blocking the future? This would be easy in Node.
+    */
+    val updatedTicker = Await.result(decorationDone, Duration(30, TimeUnit.SECONDS))
+
+    val decroatorResponse = new TickerDecoratorResponse
+    decroatorResponse.ticker = updatedTicker
     decroatorResponse.message = "Decorated symbol " + ticker.ticker
 
     decroatorResponse
@@ -60,5 +78,25 @@ class TickerDecoratorHandler {
     apiGatewayProxyResponse.headers = headerValues
 
     apiGatewayProxyResponse
+  }
+
+  def initializeDecoratorService = {
+
+    /*
+    In theory the first lambda function to execute will initialize the connection, then
+    all the functions should be able to share the same connection
+     */
+    if (decoratorService == null) {
+
+      System.out.println("Initializing connection to database...")
+
+      val database = MongoConnection.getDefaultDatabase
+      val persistence = new TickerPersistence(database)
+
+      val movingAverageCalculator = new SimpleMovingAverageCalculator
+      val encoder = new ChromosomeEncoder(movingAverageCalculator)
+
+      decoratorService = new DecoratorService(persistence, encoder)
+    }
   }
 }

@@ -6,8 +6,10 @@ import java.time.LocalDateTime
 import com.amazonaws.services.lambda.runtime.Context
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
 import com.spacecorpshandbook.ticker.core.model.{Ticker, TickerDecoratorResponse}
 import com.spacecorpshandbook.ticker.lambda.proxy.ApiGatewayProxyResponse
+import com.spacecorpshandbook.ticker.lambda.stub.CreatesDefaultChromosomeDecoratorServiceStub
 import org.apache.commons.io.IOUtils
 import org.mockito.Mockito._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -22,6 +24,9 @@ class TickerDecoratorHandlerTest extends FlatSpec
   var inputStream: InputStream = _
   var inputObj: JsonNode = _
   val objMapper: ObjectMapper = new ObjectMapper().findAndRegisterModules
+  var handler: TickerDecoratorHandler = _
+
+  val decoratorServiceStub = new CreatesDefaultChromosomeDecoratorServiceStub
 
   before {
 
@@ -33,55 +38,54 @@ class TickerDecoratorHandlerTest extends FlatSpec
     val requestAsStream = classLoader.getResourceAsStream("ApiProxyRequestTemplate.json")
 
     inputObj = objMapper.readTree(requestAsStream)
+
+    handler = new TickerDecoratorHandler
+    handler.decoratorService = decoratorServiceStub
   }
 
   behavior of "ticker decorator handler when decorating a symbol without a chromosome"
 
-
   it should "send back a ticker with a chromosome" in {
 
+    val expectedChromosome = ChromosomeDecoder.DEFAULT_CHROMOSOME
     val symbolName: String = "abcd"
-    val expectedResponseMessage: String = "Decorated symbol " + symbolName
 
     val ticker: Ticker = new Ticker
     ticker.ticker = symbolName
 
     setupInputStreamForTicker(ticker)
 
-    val handler: TickerDecoratorHandler = new TickerDecoratorHandler
     handler.decorateTicker(inputStream, outputStream, mockContext)
 
     val decoratorResponse = parseOutputStream()
 
-    decoratorResponse.message should equal(expectedResponseMessage)
+    decoratorResponse.ticker.chromosome should equal(expectedChromosome)
   }
 
-    it should "deserialize a fully populated ticker without error" in {
+  it should "deserialize a fully populated ticker without error" in {
 
-      val ticker: Ticker = new Ticker
+    val ticker: Ticker = new Ticker
 
-      ticker.ticker = "foo"
-      ticker.date = LocalDateTime.now
-      ticker.open = 87.22
-      ticker.close = 89.21
-      ticker.high = 90.11
-      ticker.low = 80.11
+    ticker.ticker = "foo"
+    ticker.date = LocalDateTime.now
+    ticker.open = 87.22
+    ticker.close = 89.21
+    ticker.high = 90.11
+    ticker.low = 80.11
+    ticker.volume = 39884843.0
 
-      setupInputStreamForTicker(ticker)
+    setupInputStreamForTicker(ticker)
 
-      val handler: TickerDecoratorHandler = new TickerDecoratorHandler
-      handler.decorateTicker(inputStream, outputStream, mockContext)
-    }
+    handler.decorateTicker(inputStream, outputStream, mockContext)
+  }
 
 
   /* ================ Utility Functions ============================ */
 
   private def setupInputStreamForTicker(ticker: Ticker): Unit = {
 
-    val tickerAsJsonNode :JsonNode = objMapper.valueToTree(ticker)
+    val tickerAsJsonNode: JsonNode = objMapper.valueToTree(ticker)
     inputObj.asInstanceOf[ObjectNode].set("body", tickerAsJsonNode)
-
-    val foo = inputObj.toString
 
     inputStream = IOUtils.toInputStream(inputObj.toString, "UTF-8")
   }
