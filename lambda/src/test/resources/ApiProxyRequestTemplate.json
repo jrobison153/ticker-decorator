@@ -29,6 +29,6 @@
     "httpMethod": "PUT",
     "apiId": "l5tcmj0vlk"
   },
-  "body": "{\n    \"ticker\": {\"symbol\": \"goog\"} \n}",
+  "body": "{\n  \"id\": \"58b3fe41d13742ff314f2a4f\",\n  \"ticker\": \"A\",\n  \"date\": \"1999-12-29T00:00:00Z\",\n  \"open\": \"63.0\",\n  \"high\": \"79.06\",\n  \"low\": \"62.94\",\n  \"close\": \"72.0\",\n  \"volume\": \"7524000.0\"\n}",
   "isBase64Encoded": false
 }

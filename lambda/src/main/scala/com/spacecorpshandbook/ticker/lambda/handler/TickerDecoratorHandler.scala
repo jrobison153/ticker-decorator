@@ -43,7 +43,7 @@ class TickerDecoratorHandler {
 
     val body: JsonNode = httpRequest get "body"
 
-    objMapper.readValue(body.toString, classOf[Ticker])
+    objMapper.readValue(body.textValue, classOf[Ticker])
   }
 
   private[this] def decorateTicker(ticker: Ticker): TickerDecoratorResponse = {
@@ -57,11 +57,11 @@ class TickerDecoratorHandler {
     */
     val updatedTicker = Await.result(decorationDone, Duration(30, TimeUnit.SECONDS))
 
-    val decroatorResponse = new TickerDecoratorResponse
-    decroatorResponse.ticker = updatedTicker
-    decroatorResponse.message = "Decorated symbol " + ticker.ticker
+    val decoratorResponse = new TickerDecoratorResponse
+    decoratorResponse.ticker = updatedTicker
+    decoratorResponse.message = "Decorated symbol " + ticker.ticker
 
-    decroatorResponse
+    decoratorResponse
   }
 
   private[this] def createApiGatewayResponse(outputStream: OutputStream, decoratorResponse: TickerDecoratorResponse): ApiGatewayProxyResponse = {

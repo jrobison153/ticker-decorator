@@ -1,0 +1,19 @@
+service: ticker
+
+provider:
+  name: aws
+  runtime: java8
+  stage: dev
+  region: us-east-1
+  profile: default
+  memorySize: 512
+  versionFunctions: false
+
+package:
+  artifact: build/libs/ticker-decorator-lambda-all-1.0.0-SNAPSHOT.jar
+
+functions:
+  addChromosome:
+    handler: com.spacecorpshandbook.ticker.lambda.handler.TickerDecoratorHandler::decorateTicker
+    events:
+      - http: post ticker/chromosome

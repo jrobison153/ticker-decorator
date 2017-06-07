@@ -45,6 +45,21 @@ class TickerDecoratorHandlerTest extends FlatSpec
 
   behavior of "ticker decorator handler when decorating a symbol without a chromosome"
 
+  it should "deserialize raw input stream" in {
+
+    val expectedChromosome = ChromosomeDecoder.DEFAULT_CHROMOSOME
+
+    val classLoader: ClassLoader = classOf[TickerDecoratorHandlerTest].getClassLoader
+
+    inputStream = classLoader.getResourceAsStream("ApiProxyRequestTemplate.json")
+
+    handler.decorateTicker(inputStream, outputStream, mockContext)
+
+    val decoratorResponse = parseOutputStream()
+
+    decoratorResponse.ticker.chromosome should equal(expectedChromosome)
+  }
+
   it should "send back a ticker with a chromosome" in {
 
     val expectedChromosome = ChromosomeDecoder.DEFAULT_CHROMOSOME
@@ -79,13 +94,12 @@ class TickerDecoratorHandlerTest extends FlatSpec
     handler.decorateTicker(inputStream, outputStream, mockContext)
   }
 
-
   /* ================ Utility Functions ============================ */
 
   private def setupInputStreamForTicker(ticker: Ticker): Unit = {
 
     val tickerAsJsonNode: JsonNode = objMapper.valueToTree(ticker)
-    inputObj.asInstanceOf[ObjectNode].set("body", tickerAsJsonNode)
+    inputObj.asInstanceOf[ObjectNode].put("body", tickerAsJsonNode.toString)
 
     inputStream = IOUtils.toInputStream(inputObj.toString, "UTF-8")
   }
