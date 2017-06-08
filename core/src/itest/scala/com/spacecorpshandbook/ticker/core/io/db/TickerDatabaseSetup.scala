@@ -26,7 +26,7 @@ trait TickerDatabaseSetup {
     try {
       val mongodConfig: IMongodConfig = new MongodConfigBuilder()
         .version(Version.Main.PRODUCTION)
-        .net(new Net(MongoConnection.HOST, MongoConnection.PORT, Network.localhostIsIPv6()))
+        .net(new Net(MongoConnection.host, MongoConnection.port, Network.localhostIsIPv6()))
         .build
 
       mongodExecutable = starter.prepare(mongodConfig)
