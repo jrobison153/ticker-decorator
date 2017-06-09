@@ -40,4 +40,4 @@ task iscalaTest(dependsOn: ['itestClasses'], type: JavaExec) {
 
 itest.dependsOn iscalaTest
 
-itest.dependsOn scalaTest
+scalaTest.dependsOn itest
