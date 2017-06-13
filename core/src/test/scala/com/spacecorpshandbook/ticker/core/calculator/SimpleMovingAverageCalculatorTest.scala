@@ -93,4 +93,13 @@ class SimpleMovingAverageCalculatorTest extends FlatSpec
     simpleMovingAverage should equal(None)
   }
 
+  behavior of "a simple moving average calculator when there is no history"
+
+  it should "return an optional None" in new SmaSetup {
+
+    val simpleMovingAverage = smaCalculator.calculatePreviousDayForDays(Seq(), 5)
+
+    simpleMovingAverage should equal(None)
+  }
+
 }

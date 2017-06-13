@@ -16,7 +16,6 @@ object MongoConnection {
 
   val mongoClient: MongoClient = MongoClient(connectionUrl)
 
-
   def composeConnectionUrl = {
 
     val mongoSystemConfig: MongoSystemConfig = new MongoSystemConfig

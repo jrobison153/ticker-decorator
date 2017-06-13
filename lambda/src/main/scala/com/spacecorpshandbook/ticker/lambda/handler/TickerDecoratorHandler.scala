@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.spacecorpshandbook.ticker.core.calculator.SimpleMovingAverageCalculator
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeEncoder
 import com.spacecorpshandbook.ticker.core.io.db.{MongoConnection, TickerPersistence}
@@ -22,7 +24,9 @@ import scala.concurrent.duration.Duration
 class TickerDecoratorHandler {
 
   var decoratorService: DecoratorService = _
-  val objMapper: ObjectMapper = new ObjectMapper().findAndRegisterModules
+  val objMapper: ObjectMapper = new ObjectMapper()
+    .registerModule(new JavaTimeModule)
+    .registerModule(DefaultScalaModule)
 
   def decorateTicker(request: InputStream, response: OutputStream, context: Context): Unit = {
 

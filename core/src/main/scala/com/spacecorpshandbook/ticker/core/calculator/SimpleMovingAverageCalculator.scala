@@ -44,7 +44,7 @@ class SimpleMovingAverageCalculator extends MovingAverageCalculator {
     */
   override def calculatePreviousDayForDays(tickers: Seq[Ticker], numberOfDays: Int): Option[BigDecimal] = {
 
-    if (tickers.tail.length >= numberOfDays) {
+    if (tickers.nonEmpty && (tickers.tail.length >= numberOfDays)) {
       val tickersToWorkOn = tickers.tail.take(numberOfDays)
 
       val sumOfCloses = tickersToWorkOn.foldLeft(BigDecimal(0)) { (sum, ticker) =>
