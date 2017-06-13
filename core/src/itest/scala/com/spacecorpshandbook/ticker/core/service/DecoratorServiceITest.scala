@@ -51,8 +51,8 @@ class DecoratorServiceITest extends AsyncFlatSpec
 
       complete <- initDoneFuture
       tickerDoc <- findSymbolWithYearOfHistoryInDatabase()
-      tickerDocNoChromosomeSeq <- clearChromosomeFieldInDatabase(tickerDoc)
-      updatedTicker <- addChromosomeToTicker(tickerDocNoChromosomeSeq)
+      tickerDocNoChromosome <- clearChromosomeFieldInDatabase(tickerDoc)
+      updatedTicker <- addChromosomeToTicker(tickerDocNoChromosome)
       updatedDocuments <- findSymbolInDatabase(updatedTicker.id)
 
     } yield {
@@ -69,10 +69,9 @@ class DecoratorServiceITest extends AsyncFlatSpec
     }
   }
 
-  def addChromosomeToTicker(tickerDocNoChromosomeSeq: Seq[Document]): Future[Ticker] = {
+  def addChromosomeToTicker(tickerDocNoChromosome: Document): Future[Ticker] = {
 
     val ticker: Ticker = new Ticker
-    val tickerDocNoChromosome = tickerDocNoChromosomeSeq.head
 
     BsonToBsonMappable.map(tickerDocNoChromosome, ticker)
 
@@ -109,9 +108,7 @@ class DecoratorServiceITest extends AsyncFlatSpec
       case None => throw new RuntimeException("Could not get ObjectId from Document")
     }
 
-    collection
-
-      .findOneAndUpdate(org.mongodb.scala.model.Filters.equal("_id", objectId), unset("chromosome"))
+    collection.findOneAndUpdate(org.mongodb.scala.model.Filters.equal("_id", objectId), unset("chromosome"))
       .toFuture
   }
 
@@ -120,7 +117,6 @@ class DecoratorServiceITest extends AsyncFlatSpec
     val objId: ObjectId = new ObjectId(id)
 
     collection
-
       .find(org.mongodb.scala.model.Filters.equal("_id", objId))
       .toFuture
   }

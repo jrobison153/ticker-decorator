@@ -3,16 +3,15 @@ package com.spacecorpshandbook.ticker.core.io.db
 import java.time.{LocalDateTime, ZoneOffset}
 import java.util.Date
 
-import com.mongodb.client.result.UpdateResult
 import com.spacecorpshandbook.ticker.core.constant.Database._
 import com.spacecorpshandbook.ticker.core.map.{BsonMappableToBson, BsonToBsonMappable}
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import org.bson.conversions.Bson
-import org.bson.types.ObjectId
-import org.mongodb.scala.bson.collection.immutable.Document
-import org.mongodb.scala.model.Filters._
-import org.mongodb.scala.model.Sorts._
-import org.mongodb.scala.{MongoCollection, MongoDatabase}
+import org.mongodb.scala.bson.ObjectId
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.{Document, MongoCollection, MongoDatabase}
+import org.mongodb.scala.model.Sorts.descending
+import org.mongodb.scala.model.Filters.{equal, lte, and}
+import org.mongodb.scala.result.UpdateResult
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,7 +34,7 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
 
     implicit val ec = ExecutionContext.global
 
-    val tickerCollection: MongoCollection[Ticker] = MongoConnection
+    val tickerCollection: MongoCollection[Document] = MongoConnection
       .getDefaultDatabase
       .getCollection(STOCK_TICKER_COLLECTION)
 
@@ -79,7 +78,7 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
 
     updateFuture map { result =>
 
-      result.head
+      result
     }
   }
 
