@@ -1,0 +1,5 @@
+#/bin/bash
+
+export TICKER_DB_PORT=27017
+export TICKER_DB_HOST=localhost
+export TICKER_DB_NAME=testStockData
