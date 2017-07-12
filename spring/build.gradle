@@ -3,7 +3,7 @@ version '1.0.0-SNAPSHOT'
 
 buildscript {
     ext {
-        springBootVersion = '1.4.0.RELEASE'
+        springBootVersion = '1.5.3.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -13,7 +13,7 @@ buildscript {
     }
 }
 
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
 
 jar.baseName = 'ticker-decorator'
 jar.appendix = 'spring'
@@ -21,7 +21,7 @@ jar.appendix = 'spring'
 
 dependencyManagement {
     imports {
-        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Camden.SR2'
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Dalston.SR1'
     }
 }
 
