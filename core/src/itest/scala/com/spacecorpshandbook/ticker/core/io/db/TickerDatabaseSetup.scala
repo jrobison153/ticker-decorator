@@ -48,9 +48,16 @@ trait TickerDatabaseSetup {
     catch {
 
       case ex: Exception =>
-        if (mongodExecutable != null) {
+
+        System.err.println(ex.toString)
+
+        if (mongoD != null) {
 
           mongoD.stop()
+        }
+
+        if (mongodExecutable != null) {
+
           mongodExecutable.stop()
         }
     }
