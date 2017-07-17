@@ -1,7 +1,7 @@
 package com.spacecorpshandbook.ticker.lambda.handler
 
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -82,7 +82,7 @@ class TickerDecoratorHandlerTest extends FlatSpec
     val ticker: Ticker = new Ticker
 
     ticker.ticker = "foo"
-    ticker.date = LocalDateTime.now
+    ticker.date = LocalDate.now
     ticker.open = 87.22
     ticker.close = 89.21
     ticker.high = 90.11

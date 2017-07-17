@@ -3,7 +3,7 @@ package com.spacecorpshandbook.ticker.core.service
 import com.spacecorpshandbook.ticker.core.calculator.SimpleMovingAverageCalculator
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeEncoder
 import com.spacecorpshandbook.ticker.core.io.db.{TickerDatabaseSetup, TickerPersistence}
-import com.spacecorpshandbook.ticker.core.map.BsonToBsonMappable
+import com.spacecorpshandbook.ticker.core.map.DocumentToTickerMap
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import org.bson.BsonString
 import org.bson.types.ObjectId
@@ -71,9 +71,7 @@ class DecoratorServiceITest extends AsyncFlatSpec
 
   def addChromosomeToTicker(tickerDocNoChromosome: Document): Future[Ticker] = {
 
-    val ticker: Ticker = new Ticker
-
-    BsonToBsonMappable.map(tickerDocNoChromosome, ticker)
+    val ticker: Ticker = DocumentToTickerMap.map(tickerDocNoChromosome)
 
     val movingAverageCalculator = new SimpleMovingAverageCalculator
     val chromosomeEncoder = new ChromosomeEncoder(movingAverageCalculator)

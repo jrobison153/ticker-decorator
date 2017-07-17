@@ -1,6 +1,6 @@
 package com.spacecorpshandbook.ticker.core.spy
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 import com.mongodb.client.result.UpdateResult
 import com.spacecorpshandbook.ticker.core.io.db.Persistence
@@ -36,7 +36,7 @@ case class PersistenceSpy() extends Persistence {
 
   override def symbol(tickerSymbol: String): Persistence = this
 
-  override def beforeDate(date: LocalDateTime): Persistence = this
+  override def beforeDate(date: LocalDate): Persistence = this
 
   override def limit(numDays: Int): Persistence = this
 

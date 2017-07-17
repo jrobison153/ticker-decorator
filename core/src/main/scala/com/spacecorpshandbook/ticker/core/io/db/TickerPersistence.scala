@@ -1,17 +1,16 @@
 package com.spacecorpshandbook.ticker.core.io.db
 
-import java.time.{LocalDateTime, ZoneOffset}
-import java.util.Date
+import java.time.LocalDate
 
 import com.spacecorpshandbook.ticker.core.constant.Database._
-import com.spacecorpshandbook.ticker.core.map.{BsonMappableToBson, BsonToBsonMappable}
+import com.spacecorpshandbook.ticker.core.map.{DocumentToTickerMap, TickerToDocumentMap}
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.{Document, MongoCollection, MongoDatabase}
+import org.mongodb.scala.model.Filters.{and, equal, lte}
 import org.mongodb.scala.model.Sorts.descending
-import org.mongodb.scala.model.Filters.{equal, lte, and}
 import org.mongodb.scala.result.UpdateResult
+import org.mongodb.scala.{Document, MongoCollection, MongoDatabase}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,7 +26,7 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
 
   private var id: String = ""
   private var limitDays: Int = 365
-  private var tickersBeforeDate: LocalDateTime = _
+  private var tickersBeforeDate: LocalDate = _
   private var tickerSymbol: String = ""
 
   def search(): Future[Seq[Ticker]] = {
@@ -56,9 +55,7 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
 
       documents map { document =>
 
-        val ticker = new Ticker
-        BsonToBsonMappable.map(document, ticker)
-        ticker
+        DocumentToTickerMap map document
       }
     }
   }
@@ -71,7 +68,7 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
 
     implicit val ec = ExecutionContext.global
 
-    val tickerAsDocument = BsonMappableToBson.map(ticker)
+    val tickerAsDocument = TickerToDocumentMap.map(ticker)
     val objId = new ObjectId(ticker.id)
 
     val updateFuture = tickerCollection.replaceOne(equal("_id", objId), tickerAsDocument).toFuture
@@ -89,7 +86,7 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
     this
   }
 
-  def beforeDate(date: LocalDateTime): TickerPersistence = {
+  def beforeDate(date: LocalDate): TickerPersistence = {
 
     this.tickersBeforeDate = date
 
@@ -116,8 +113,7 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
 
     if (tickersBeforeDate != null) {
 
-      val searchDate = Date.from(tickersBeforeDate.toInstant(ZoneOffset.UTC))
-      filtersToApply = filtersToApply :+ lte("date", searchDate)
+      filtersToApply = filtersToApply :+ lte("date", tickersBeforeDate.toString)
     }
 
     if (!tickerSymbol.isEmpty) {

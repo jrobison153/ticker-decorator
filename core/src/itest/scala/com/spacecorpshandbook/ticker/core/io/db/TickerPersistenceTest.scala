@@ -1,6 +1,6 @@
 package com.spacecorpshandbook.ticker.core.io.db
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, BeforeAndAfterAll, Matchers}
@@ -41,7 +41,7 @@ class TickerPersistenceTest extends AsyncFlatSpec
     for {
 
       complete <- initDoneFuture
-      tickers <- persistence.symbol("A").limit(numDaysOfData).beforeDate(LocalDateTime.now).search()
+      tickers <- persistence.symbol("A").limit(numDaysOfData).beforeDate(LocalDate.now).search()
 
     } yield {
 
@@ -55,7 +55,7 @@ class TickerPersistenceTest extends AsyncFlatSpec
     for {
 
       complete <- initDoneFuture
-      tickers <- persistence.symbol("A").beforeDate(LocalDateTime.now).search()
+      tickers <- persistence.symbol("A").beforeDate(LocalDate.now).search()
 
     } yield {
 
@@ -99,7 +99,7 @@ class TickerPersistenceTest extends AsyncFlatSpec
     for {
 
       complete <- initDoneFuture
-      tickers <- persistence.symbol("A").limit(numDaysOfData).beforeDate(LocalDateTime.now.minusYears(1000)).search()
+      tickers <- persistence.symbol("A").limit(numDaysOfData).beforeDate(LocalDate.now.minusYears(1000)).search()
 
     } yield {
 
@@ -114,7 +114,7 @@ class TickerPersistenceTest extends AsyncFlatSpec
 
     for {
       complete <- initDoneFuture
-      tickers <- persistence.symbol("I don't exist").limit(numDaysOfData).beforeDate(LocalDateTime.now).search()
+      tickers <- persistence.symbol("I don't exist").limit(numDaysOfData).beforeDate(LocalDate.now).search()
 
     } yield {
 

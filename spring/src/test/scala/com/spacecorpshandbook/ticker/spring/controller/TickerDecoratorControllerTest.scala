@@ -1,6 +1,6 @@
 package com.spacecorpshandbook.ticker.spring.controller
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
@@ -40,7 +40,7 @@ class TickerDecoratorControllerTest extends FlatSpec
     ticker.close = BigDecimal(45.21)
     ticker.high = BigDecimal(45.21)
     ticker.low = BigDecimal(45.21)
-    ticker.date = LocalDateTime.now
+    ticker.date = LocalDate.now
 
     val tickerAsString = objMapper.writeValueAsString(ticker)
 
