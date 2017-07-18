@@ -190,7 +190,7 @@ class TickerToDocumentMapTest extends FlatSpec
 
     val document = TickerToDocumentMap map ticker
 
-    document.getDouble("ex-dividend") should equal(ticker.exDividend)
+    document.getDouble("exDividend") should equal(ticker.exDividend)
   }
 
   it should "not map the exDividend when it isn't present" in {
@@ -200,7 +200,7 @@ class TickerToDocumentMapTest extends FlatSpec
 
     val document = TickerToDocumentMap map ticker
 
-    document.getDouble("ex-dividend") should be(null)
+    document.getDouble("exDividend") should be(null)
   }
 
   it should "map the splitRatio when present" in {
@@ -210,7 +210,7 @@ class TickerToDocumentMapTest extends FlatSpec
 
     val document = TickerToDocumentMap map ticker
 
-    document.getDouble("split_ratio") should equal(ticker.splitRatio)
+    document.getDouble("splitRatio") should equal(ticker.splitRatio)
   }
 
   it should "not map the splitRatio when it isn't present" in {
@@ -220,7 +220,7 @@ class TickerToDocumentMapTest extends FlatSpec
 
     val document = TickerToDocumentMap map ticker
 
-    document.getDouble("split_ratio") should be(null)
+    document.getDouble("splitRatio") should be(null)
   }
 
   it should "map the chromosome when present" in {

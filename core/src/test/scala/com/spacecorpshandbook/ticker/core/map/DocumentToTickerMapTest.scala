@@ -167,7 +167,7 @@ class DocumentToTickerMapTest extends FlatSpec
 
   it should "map the exDividend value when present" in {
 
-    val document =  Document("ex-dividend" -> 0.124)
+    val document =  Document("exDividend" -> 0.124)
 
     val ticker = DocumentToTickerMap.map(document)
 
@@ -185,7 +185,7 @@ class DocumentToTickerMapTest extends FlatSpec
 
   it should "map the splitRatio value when present" in {
 
-    val document =  Document("split_ratio" -> 1.5)
+    val document =  Document("splitRatio" -> 1.5)
 
     val ticker = DocumentToTickerMap.map(document)
 

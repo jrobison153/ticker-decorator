@@ -112,7 +112,7 @@ object DocumentToTickerMap {
   }
 
   private def mapExDividend(document: Document, ticker: Ticker) = {
-    val exDividend = document getDouble "ex-dividend"
+    val exDividend = document getDouble "exDividend"
 
     if (exDividend != null) {
 
@@ -121,7 +121,7 @@ object DocumentToTickerMap {
   }
 
   private def mapSplitRatio(document: Document, ticker: Ticker) = {
-    val splitRatio = document getDouble "split_ratio"
+    val splitRatio = document getDouble "splitRatio"
 
     if (splitRatio != null) {
 

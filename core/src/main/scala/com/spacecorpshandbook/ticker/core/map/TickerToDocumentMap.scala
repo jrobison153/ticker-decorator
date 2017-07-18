@@ -53,12 +53,12 @@ object TickerToDocumentMap {
 
     if(ticker.exDividend != null) {
 
-      document = document + ("ex-dividend" -> new BsonDouble(ticker.exDividend.toDouble))
+      document = document + ("exDividend" -> new BsonDouble(ticker.exDividend.toDouble))
     }
 
     if(ticker.splitRatio != null) {
 
-      document = document + ("split_ratio" -> new BsonDouble(ticker.splitRatio.toDouble))
+      document = document + ("splitRatio" -> new BsonDouble(ticker.splitRatio.toDouble))
     }
 
     if(ticker.chromosome != null) {
