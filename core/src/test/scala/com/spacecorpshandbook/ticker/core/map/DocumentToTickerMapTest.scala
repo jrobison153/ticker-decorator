@@ -75,6 +75,15 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.date should be (null)
   }
 
+  it should "not map the date when it is empty" in {
+
+    val document =  Document("date" -> "")
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.date should be (null)
+  }
+
   it should "map the open value when present" in {
 
     val document =  Document("open" -> 23.45)

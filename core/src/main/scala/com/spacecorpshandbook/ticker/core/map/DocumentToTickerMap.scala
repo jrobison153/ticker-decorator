@@ -60,7 +60,7 @@ object DocumentToTickerMap {
   private def mapDate(document: Document, ticker: Ticker) = {
     val date = document getString "date"
 
-    if (date != null) {
+    if (date != null && !date.isEmpty) {
 
       ticker.date = LocalDate.parse(date)
     }

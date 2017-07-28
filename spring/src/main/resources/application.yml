@@ -1,9 +1,12 @@
+spring:
+  application:
+    name: TickerDecorator
+
+server:
+  port: ${port:8081}
+
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
     enabled: false
-
-spring:
-  application:
-    name: TickerDecorator

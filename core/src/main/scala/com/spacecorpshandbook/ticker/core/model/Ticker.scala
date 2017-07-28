@@ -1,7 +1,10 @@
 package com.spacecorpshandbook.ticker.core.model
 
 import java.time.LocalDate
+
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
+
 import scala.beans.BeanProperty
 
 /**
@@ -10,6 +13,7 @@ import scala.beans.BeanProperty
 class Ticker {
 
   @BeanProperty
+  @JsonProperty( value = "_id" )
   var id: String = ""
 
   @BeanProperty
