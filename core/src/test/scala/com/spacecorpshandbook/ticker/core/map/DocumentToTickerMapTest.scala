@@ -84,13 +84,22 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.date should be (null)
   }
 
-  it should "map the open value when present" in {
+  it should "map the open value when present and is a double value" in {
 
     val document =  Document("open" -> 23.45)
 
     val ticker = DocumentToTickerMap.map(document)
 
     ticker.open should equal(23.45)
+  }
+
+  it should "map the open value when present and is an integer value" in {
+
+    val document =  Document("open" -> 23)
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.open should equal(23)
   }
 
   it should "not map the open value when it isn't present" in {
@@ -102,13 +111,22 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.open should be (null)
   }
 
-  it should "map the high value when present" in {
+  it should "map the high value when present and is a double value" in {
 
     val document =  Document("high" -> 23.46)
 
     val ticker = DocumentToTickerMap.map(document)
 
     ticker.high should equal(23.46)
+  }
+
+  it should "map the high value when present and is an integer value" in {
+
+    val document =  Document("high" -> 23)
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.high should equal(23)
   }
 
   it should "not map the high value when it isn't present" in {
@@ -120,13 +138,22 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.high should be (null)
   }
 
-  it should "map the low value when present" in {
+  it should "map the low value when present and is a double value" in {
 
     val document =  Document("low" -> 23.36)
 
     val ticker = DocumentToTickerMap.map(document)
 
     ticker.low should equal(23.36)
+  }
+
+  it should "map the low value when present and is an integer value" in {
+
+    val document =  Document("low" -> 23)
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.low should equal(23)
   }
 
   it should "not map the low value when it isn't present" in {
@@ -138,13 +165,22 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.low should be (null)
   }
 
-  it should "map the close value when present" in {
+  it should "map the close value when present and is a double value" in {
 
     val document =  Document("close" -> 25.36)
 
     val ticker = DocumentToTickerMap.map(document)
 
     ticker.close should equal(25.36)
+  }
+
+  it should "map the close value when present and is an integer value" in {
+
+    val document =  Document("close" -> 25)
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.close should equal(25)
   }
 
   it should "not map the close value when it isn't present" in {
@@ -156,13 +192,22 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.close should be (null)
   }
 
-  it should "map the volume value when present" in {
+  it should "map the volume value when present and is a double value" in {
 
     val document =  Document("volume" -> 4.47399e+07)
 
     val ticker = DocumentToTickerMap.map(document)
 
     ticker.volume should equal(44739900)
+  }
+
+  it should "map the volume value when present and is an integer value" in {
+
+    val document =  Document("volume" -> 34533434)
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.volume should equal(34533434)
   }
 
   it should "not map the volume value when it isn't present" in {
@@ -174,13 +219,22 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.volume should be (null)
   }
 
-  it should "map the exDividend value when present" in {
+  it should "map the exDividend value when present and is a double value" in {
 
     val document =  Document("exDividend" -> 0.124)
 
     val ticker = DocumentToTickerMap.map(document)
 
     ticker.exDividend should equal(0.124)
+  }
+
+  it should "map the exDividend value when present and is an integer value" in {
+
+    val document =  Document("exDividend" -> 2)
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.exDividend should equal(2)
   }
 
   it should "not map the exDividend value when it isn't present" in {
@@ -192,13 +246,22 @@ class DocumentToTickerMapTest extends FlatSpec
     ticker.exDividend should be (null)
   }
 
-  it should "map the splitRatio value when present" in {
+  it should "map the splitRatio value when present and is a double value" in {
 
     val document =  Document("splitRatio" -> 1.5)
 
     val ticker = DocumentToTickerMap.map(document)
 
     ticker.splitRatio should equal(1.5)
+  }
+
+  it should "map the splitRatio value when present and is an integer value" in {
+
+    val document =  Document("splitRatio" -> 3)
+
+    val ticker = DocumentToTickerMap.map(document)
+
+    ticker.splitRatio should equal(3)
   }
 
   it should "not map the splitRatio value when it isn't present" in {

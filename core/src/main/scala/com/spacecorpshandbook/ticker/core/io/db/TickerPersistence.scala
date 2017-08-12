@@ -51,13 +51,24 @@ class TickerPersistence(private var dbConnection: MongoDatabase) extends Persist
         .toFuture
     }
 
-    findFuture map { documents =>
+    findFuture onFailure {
+      case e => System.err.println(s"""Search for ticker failed: ${e.toString}""")
+    }
+
+    val mappedTickerFuture = findFuture map { documents =>
 
       documents map { document =>
 
         DocumentToTickerMap map document
       }
     }
+
+    mappedTickerFuture onFailure {
+
+      case e => System.err.println(s"""Failed to map documents to tickers:git st ${e.toString}""")
+    }
+
+    mappedTickerFuture
   }
 
   def replace(ticker: Ticker): Future[UpdateResult] = {

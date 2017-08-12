@@ -3,7 +3,8 @@ package com.spacecorpshandbook.ticker.core.map
 import java.time.LocalDate
 
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import org.bson.Document
+import org.mongodb.scala.bson.BsonValue
+import org.mongodb.scala.bson.collection.immutable.Document
 
 /**
   * Maps a BSON document to a Ticker object
@@ -67,65 +68,87 @@ object DocumentToTickerMap {
   }
 
   private def mapOpen(document: Document, ticker: Ticker) = {
-    val open = document getDouble "open"
 
-    if (open != null) {
+    document.get("open") match {
 
-      ticker.open = BigDecimal(open)
+      case Some(bsonValue) => createBigDecimalFromBson(bsonValue) match {
+
+          case Some(bigDecimal) => ticker.open = bigDecimal
+          case None =>
+        }
+      case None =>
     }
   }
 
   private def mapHigh(document: Document, ticker: Ticker) = {
-    val high = document getDouble "high"
+    document.get("high") match {
 
-    if (high != null) {
+      case Some(bsonValue) => createBigDecimalFromBson(bsonValue) match {
 
-      ticker.high = BigDecimal(high)
+          case Some(bigDecimal) => ticker.high = bigDecimal
+          case None =>
+        }
+      case None =>
     }
   }
 
   private def mapLow(document: Document, ticker: Ticker) = {
-    val low = document getDouble "low"
+    document.get("low") match {
 
-    if (low != null) {
+      case Some(bsonValue) => createBigDecimalFromBson(bsonValue) match {
 
-      ticker.low = BigDecimal(low)
+        case Some(bigDecimal) => ticker.low = bigDecimal
+        case None =>
+      }
+      case None =>
     }
   }
 
   private def mapClose(document: Document, ticker: Ticker) = {
-    val close = document getDouble "close"
+    document.get("close") match {
 
-    if (close != null) {
+      case Some(bsonValue) => createBigDecimalFromBson(bsonValue) match {
 
-      ticker.close = BigDecimal(close)
+        case Some(bigDecimal) => ticker.close = bigDecimal
+        case None =>
+      }
+      case None =>
     }
   }
 
   private def mapVolume(document: Document, ticker: Ticker) = {
-    val volume = document getDouble "volume"
+    document.get("volume") match {
 
-    if (volume != null) {
+      case Some(bsonValue) => createBigDecimalFromBson(bsonValue) match {
 
-      ticker.volume = BigDecimal(volume)
+        case Some(bigDecimal) => ticker.volume = bigDecimal
+        case None =>
+      }
+      case None =>
     }
   }
 
   private def mapExDividend(document: Document, ticker: Ticker) = {
-    val exDividend = document getDouble "exDividend"
+    document.get("exDividend") match {
 
-    if (exDividend != null) {
+      case Some(bsonValue) => createBigDecimalFromBson(bsonValue) match {
 
-      ticker.exDividend = BigDecimal(exDividend)
+        case Some(bigDecimal) => ticker.exDividend = bigDecimal
+        case None =>
+      }
+      case None =>
     }
   }
 
   private def mapSplitRatio(document: Document, ticker: Ticker) = {
-    val splitRatio = document getDouble "splitRatio"
+    document.get("splitRatio") match {
 
-    if (splitRatio != null) {
+      case Some(bsonValue) => createBigDecimalFromBson(bsonValue) match {
 
-      ticker.splitRatio = BigDecimal(splitRatio)
+        case Some(bigDecimal) => ticker.splitRatio = bigDecimal
+        case None =>
+      }
+      case None =>
     }
   }
 
@@ -136,5 +159,25 @@ object DocumentToTickerMap {
 
       ticker.chromosome = chromosome
     }
+  }
+
+  private def createBigDecimalFromBson(bsonValue: BsonValue) : Option[BigDecimal] = {
+
+    var result: Option[BigDecimal] = None
+
+    if (bsonValue.isDouble) {
+
+      result = Some(BigDecimal(bsonValue.asDouble.getValue))
+
+    } else if (bsonValue.isInt32) {
+
+      result = Some(BigDecimal(bsonValue.asInt32.getValue))
+
+    } else if (bsonValue.isInt64) {
+
+      result = Some(BigDecimal(bsonValue.asInt64.getValue))
+    }
+
+    result
   }
 }

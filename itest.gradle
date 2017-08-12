@@ -16,7 +16,7 @@ sourceSets {
     // resources to classpath when running integration tests from
     // the IDE. It's is not a good solution but I don't know about
     // a better one.
-    test {
+    itest {
         resources.srcDir file('src/itest/resources')
     }
 }
