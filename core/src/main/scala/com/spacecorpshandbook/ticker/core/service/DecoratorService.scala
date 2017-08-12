@@ -21,11 +21,10 @@ class DecoratorService(persistence: Persistence, chromosomeEncoder: Encoder) ext
     */
   def addChromosome(ticker: Ticker): Future[Ticker] = {
 
-    for {
+    val doneFuture = for {
 
       tickers <- persistence
         .symbol(ticker.ticker)
-        .limit(10)
         .beforeDate(ticker.date)
         .search()
       updatedTicker <- {
@@ -48,6 +47,12 @@ class DecoratorService(persistence: Persistence, chromosomeEncoder: Encoder) ext
 
       updatedTicker
     }
+
+    doneFuture onFailure {
+      case e => System.err.println(e.toString)
+    }
+
+    doneFuture
   }
 
 
