@@ -2,10 +2,11 @@ package com.spacecorpshandbook.ticker.spring.controller
 
 import java.time.LocalDate
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import com.spacecorpshandbook.ticker.core.service.DecoratorService
+import com.spacecorpshandbook.ticker.spring.spy.StringMessagePublisherSpy
 import com.spacecorpshandbook.ticker.spring.stub.CreatesDefaultChromosomeDecoratorServiceStub
 import io.restassured.http.ContentType
 import io.restassured.module.mockmvc.RestAssuredMockMvc
@@ -19,18 +20,15 @@ class TickerDecoratorControllerTest extends FlatSpec
 
   val objMapper : ObjectMapper = new ObjectMapper().findAndRegisterModules
 
+  var messagePublisherSpy : StringMessagePublisherSpy = _
+  var tickerAsString: String = _
+
   before {
 
     val decoratorService: DecoratorService = new CreatesDefaultChromosomeDecoratorServiceStub
+    messagePublisherSpy = new StringMessagePublisherSpy
 
-    RestAssuredMockMvc.standaloneSetup(new TickerDecoratorController(decoratorService))
-  }
-
-  behavior of "ticker decorator controller when decorating a symbol without a chromosome"
-
-  val expectedChromosome: String = ChromosomeDecoder.DEFAULT_CHROMOSOME
-
-  it should "send back a ticker with a chromosome" in {
+    RestAssuredMockMvc.standaloneSetup(new TickerDecoratorController(decoratorService, messagePublisherSpy))
 
     val symbolName = "abc"
 
@@ -42,7 +40,14 @@ class TickerDecoratorControllerTest extends FlatSpec
     ticker.low = BigDecimal(45.21)
     ticker.date = LocalDate.now
 
-    val tickerAsString = objMapper.writeValueAsString(ticker)
+    tickerAsString = objMapper.writeValueAsString(ticker)
+  }
+
+  behavior of "ticker decorator controller when decorating a symbol without a chromosome"
+
+  val expectedChromosome: String = ChromosomeDecoder.DEFAULT_CHROMOSOME
+
+  it should "send back a ticker with a chromosome" in {
 
     given.
       body(tickerAsString)
@@ -52,6 +57,20 @@ class TickerDecoratorControllerTest extends FlatSpec
       .then
       .statusCode(200)
       .body("ticker.chromosome", equalTo(expectedChromosome))
+  }
 
+  it should "publish a TICKER_DECORATED event to the TICKER_BATCH_PROCESSING topic when complete" in {
+
+    given.
+      body(tickerAsString)
+      .contentType(ContentType.JSON)
+      .when
+      .post("/ticker/decorate")
+
+    val lastPublishedEventAsString : String = messagePublisherSpy.lastPublishedEvent
+    val lastPublishedEvent : JsonNode = objMapper.readTree(lastPublishedEventAsString)
+
+    lastPublishedEvent.get("name").textValue should equal("TICKER_DECORATED")
+    messagePublisherSpy.lastTopicPublishedTo should equal("TICKER_BATCH_PROCESSING")
   }
 }
