@@ -1,32 +1,50 @@
 package com.spacecorpshandbook.ticker.spring.wrapper
 
-import com.spacecorpshandbook.ticker.core.calculator.{MovingAverageCalculator, SimpleMovingAverageCalculator}
-import com.spacecorpshandbook.ticker.core.chromosome.{ChromosomeEncoder, Encoder}
-import com.spacecorpshandbook.ticker.core.io.db.{MongoConnection, Persistence, TickerPersistence}
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import com.spacecorpshandbook.ticker.core.service.{DecoratorService, TickerService}
-import org.mongodb.scala.MongoDatabase
+import com.spacecorpshandbook.ticker.core.service.TickerService
+import com.spacecorpshandbook.ticker.spring.message.MessagePublisher
 import org.springframework.stereotype.Service
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Wrap the real DecoratorService so it can be managed by Spring
   */
 
 @Service
-class DecoratorServiceWrapper extends TickerService {
+class DecoratorServiceWrapper(wrappedDecorator: TickerService, messagePublisher: MessagePublisher) extends TickerServiceMirror {
 
-  val database: MongoDatabase = MongoConnection.getDefaultDatabase
-  val persistence: Persistence = new TickerPersistence(database)
+  implicit val ec = ExecutionContext.global
 
-  val movingAverageCalculator: MovingAverageCalculator = new SimpleMovingAverageCalculator
-  val encoder: Encoder = new ChromosomeEncoder(movingAverageCalculator)
+    def addChromosome(ticker: Ticker): Future[Ticker] = {
 
-  val wrappedDecorator : DecoratorService = new DecoratorService(persistence, encoder)
+    val doneFuture = for {
 
-  override def addChromosome(ticker: Ticker): Future[Ticker] = {
+      decoratedTicker <- wrappedDecorator.addChromosome(ticker) recover {
+        case e: Exception =>
+          ticker.chromosome = ""
+          ticker
+      }
 
-    wrappedDecorator.addChromosome(ticker)
+      _ <- {
+
+        if (decoratedTicker.chromosome != null && !decoratedTicker.chromosome.isEmpty) {
+
+          val nodeFactory = JsonNodeFactory.instance
+          val tickerDecoratedEvent = nodeFactory.objectNode
+          tickerDecoratedEvent.put("name", "TICKER_DECORATED")
+
+          messagePublisher.publish("TICKER_BATCH_PROCESSING", tickerDecoratedEvent.toString)
+        }
+
+        Future {}
+      }
+    } yield {
+
+      decoratedTicker
+    }
+
+    doneFuture
   }
 }

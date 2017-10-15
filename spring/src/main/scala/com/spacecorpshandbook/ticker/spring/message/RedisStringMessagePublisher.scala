@@ -9,5 +9,8 @@ import org.springframework.data.redis.core.RedisTemplate
   */
 class RedisStringMessagePublisher(redisTemplate: RedisTemplate[String, String]) extends MessagePublisher {
 
-  override def publish(topic: String, message: String): Unit = ???
+  override def publish(topic: String, message: String): Unit = {
+
+    redisTemplate.convertAndSend(topic, message)
+  }
 }

@@ -2,12 +2,12 @@ package com.spacecorpshandbook.ticker.spring.controller
 
 import java.time.LocalDate
 
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import com.spacecorpshandbook.ticker.core.service.DecoratorService
 import com.spacecorpshandbook.ticker.spring.spy.StringMessagePublisherSpy
 import com.spacecorpshandbook.ticker.spring.stub.CreatesDefaultChromosomeDecoratorServiceStub
+import com.spacecorpshandbook.ticker.spring.wrapper.TickerServiceMirror
 import io.restassured.http.ContentType
 import io.restassured.module.mockmvc.RestAssuredMockMvc
 import io.restassured.module.mockmvc.RestAssuredMockMvc._
@@ -25,7 +25,7 @@ class TickerDecoratorControllerTest extends FlatSpec
 
   before {
 
-    val decoratorService: DecoratorService = new CreatesDefaultChromosomeDecoratorServiceStub
+    val decoratorService: TickerServiceMirror = new CreatesDefaultChromosomeDecoratorServiceStub
     messagePublisherSpy = new StringMessagePublisherSpy
 
     RestAssuredMockMvc.standaloneSetup(new TickerDecoratorController(decoratorService, messagePublisherSpy))
@@ -57,20 +57,5 @@ class TickerDecoratorControllerTest extends FlatSpec
       .then
       .statusCode(200)
       .body("ticker.chromosome", equalTo(expectedChromosome))
-  }
-
-  it should "publish a TICKER_DECORATED event to the TICKER_BATCH_PROCESSING topic when complete" in {
-
-    given.
-      body(tickerAsString)
-      .contentType(ContentType.JSON)
-      .when
-      .post("/ticker/decorate")
-
-    val lastPublishedEventAsString : String = messagePublisherSpy.lastPublishedEvent
-    val lastPublishedEvent : JsonNode = objMapper.readTree(lastPublishedEventAsString)
-
-    lastPublishedEvent.get("name").textValue should equal("TICKER_DECORATED")
-    messagePublisherSpy.lastTopicPublishedTo should equal("TICKER_BATCH_PROCESSING")
   }
 }

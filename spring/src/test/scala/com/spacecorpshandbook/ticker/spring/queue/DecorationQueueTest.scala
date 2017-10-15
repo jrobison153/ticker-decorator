@@ -1,7 +1,7 @@
 package com.spacecorpshandbook.ticker.spring.queue
 
 import com.spacecorpshandbook.ticker.spring.exception.InvalidTickerException
-import com.spacecorpshandbook.ticker.spring.spy.DecoratorServiceSpy
+import com.spacecorpshandbook.ticker.spring.spy.DecoratorServiceMirrorSpy
 import com.spacecorpshandbook.ticker.spring.stub.{InvalidTickerQueueStub, ValidTickerQueueStub}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -13,7 +13,7 @@ class DecorationQueueTest extends FlatSpec
   trait ValidTickerSetup {
 
     val validTickerQueueStub = new ValidTickerQueueStub
-    val decoratorServiceSpy = new DecoratorServiceSpy
+    val decoratorServiceSpy = new DecoratorServiceMirrorSpy
     val decorationQueue = new DecorationQueue(validTickerQueueStub, decoratorServiceSpy)
 
     decorationQueue.readTicker
@@ -34,7 +34,7 @@ class DecorationQueueTest extends FlatSpec
   trait InvalidTickerSetup {
 
     val invalidTickerQueueStub = new InvalidTickerQueueStub()
-    val decoratorServiceSpy = new DecoratorServiceSpy
+    val decoratorServiceSpy = new DecoratorServiceMirrorSpy
   }
 
   it should "throw an exception when the _id is not set" in new InvalidTickerSetup {

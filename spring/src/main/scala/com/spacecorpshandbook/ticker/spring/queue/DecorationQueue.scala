@@ -2,15 +2,15 @@ package com.spacecorpshandbook.ticker.spring.queue
 
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import com.spacecorpshandbook.ticker.core.service.TickerService
 import com.spacecorpshandbook.ticker.spring.exception.InvalidTickerException
+import com.spacecorpshandbook.ticker.spring.wrapper.TickerServiceMirror
 import org.springframework.stereotype.Component
 
 /**
   * Redis chromosome decoration task queue.
   */
 @Component
-class DecorationQueue(queue: StringQueue, service: TickerService) {
+class DecorationQueue(queue: StringQueue, service: TickerServiceMirror) {
 
   var UNDECORATED_TICKERS = "UNDECORATED_TICKERS"
 

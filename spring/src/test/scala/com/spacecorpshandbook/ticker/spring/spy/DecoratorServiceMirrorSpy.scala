@@ -1,11 +1,11 @@
 package com.spacecorpshandbook.ticker.spring.spy
 
 import com.spacecorpshandbook.ticker.core.model.Ticker
-import com.spacecorpshandbook.ticker.core.service.TickerService
+import com.spacecorpshandbook.ticker.spring.wrapper.TickerServiceMirror
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DecoratorServiceSpy extends TickerService {
+class DecoratorServiceMirrorSpy extends TickerServiceMirror {
 
   implicit val ec = ExecutionContext.global
 

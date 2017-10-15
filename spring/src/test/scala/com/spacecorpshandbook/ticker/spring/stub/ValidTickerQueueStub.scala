@@ -18,13 +18,8 @@ class ValidTickerQueueStub extends StringQueue {
     "    \"low\": \"44.81\",\n" +
     "    \"close\": \"45.19\",\n" +
     "    \"volume\": \"1350400.0\",\n" +
-    "    \"exDividend\": \"0.0\",\n" +
-    "    \"splitRatio\": \"1.0\",\n" +
-    "    \"adjOpen\": \"43.003256083661\",\n" +
-    "    \"adjHigh\": \"43.364388399943\",\n" +
-    "    \"adjLow\": \"42.585102875333\",\n" +
-    "    \"adjClose\": \"42.946235191616\",\n" +
-    "    \"adjVolume\": \"1350400.0\"\n" +
+    "    \"ex-dividend\": \"0.0\",\n" +
+    "    \"split_ratio\": \"1.0\"\n" +
     "  }\n"
 
   val objMapper : ObjectMapper = new ObjectMapper()

@@ -38,9 +38,11 @@ class Ticker {
   var volume: BigDecimal = _
 
   @BeanProperty
+  @JsonProperty( value = "ex-dividend")
   var exDividend: BigDecimal = _
 
   @BeanProperty
+  @JsonProperty( value = "split_ratio")
   var splitRatio: BigDecimal = _
 
   @BeanProperty
