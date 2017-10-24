@@ -1,5 +1,7 @@
 package com.spacecorpshandbook.ticker.spring.wrapper
 
+import java.time.{ZoneId, ZonedDateTime}
+
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import com.spacecorpshandbook.ticker.core.service.TickerService
@@ -34,6 +36,9 @@ class DecoratorServiceWrapper(wrappedDecorator: TickerService, messagePublisher:
           val nodeFactory = JsonNodeFactory.instance
           val tickerDecoratedEvent = nodeFactory.objectNode
           tickerDecoratedEvent.put("name", "TICKER_DECORATED")
+
+          val now = ZonedDateTime.now(ZoneId.of("UTC"))
+          tickerDecoratedEvent.put("eventCreatedTimestamp", now.toString)
 
           messagePublisher.publish("TICKER_BATCH_PROCESSING", tickerDecoratedEvent.toString)
         }

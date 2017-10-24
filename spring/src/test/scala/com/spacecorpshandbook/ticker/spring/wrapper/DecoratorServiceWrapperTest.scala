@@ -46,6 +46,26 @@ class DecoratorServiceWrapperTest extends AsyncFlatSpec
     }
   }
 
+  it should "set the eventCreatedTimestamp on the TICKER_DECORATED event" in {
+
+    val wrappedServiceSpy = new DecoratorServiceSpy
+    val messagePublisherSpy = new StringMessagePublisherSpy
+    val serviceWrapper = new DecoratorServiceWrapper(wrappedServiceSpy, messagePublisherSpy)
+
+    serviceWrapper.addChromosome(new Ticker) map { _ =>
+
+      val message = messagePublisherSpy.lastPublishedEvent
+      val messageAsJsonNode = objMapper.readTree(message)
+
+
+      messageAsJsonNode.has("eventCreatedTimestamp") should equal(true)
+
+      val eventCreatedTimestamp = messageAsJsonNode.get("eventCreatedTimestamp").asText()
+
+      eventCreatedTimestamp.length should be > 0
+    }
+  }
+
   it should "not publish a TICKER_DECORATED event on decoration failure" in {
 
     val wrappedServiceSpy = new ExceptionThrowingDecoratorServiceStub
