@@ -18,7 +18,6 @@ class DecoratorServiceWrapperTest extends AsyncFlatSpec
   behavior of "a DecorationServiceWrapper when adding a chromosome"
 
   it should "delegate to the wrapped service" in {
-
     val wrappedServiceSpy = new DecoratorServiceSpy
     val messagePublisherSpy = new StringMessagePublisherSpy
     val serviceWrapper = new DecoratorServiceWrapper(wrappedServiceSpy, messagePublisherSpy)
@@ -60,7 +59,28 @@ class DecoratorServiceWrapperTest extends AsyncFlatSpec
 
       messageAsJsonNode.has("eventCreatedTimestamp") should equal(true)
 
-      val eventCreatedTimestamp = messageAsJsonNode.get("eventCreatedTimestamp").asText()
+      val eventCreatedTimestamp = messageAsJsonNode.get("eventCreatedTimestamp").asLong()
+      val zero: Long = 0
+
+      eventCreatedTimestamp should be > zero
+    }
+  }
+
+  it should "set the eventCreatedTimestampString on the TICKER_DECORATED event" in {
+
+    val wrappedServiceSpy = new DecoratorServiceSpy
+    val messagePublisherSpy = new StringMessagePublisherSpy
+    val serviceWrapper = new DecoratorServiceWrapper(wrappedServiceSpy, messagePublisherSpy)
+
+    serviceWrapper.addChromosome(new Ticker) map { _ =>
+
+      val message = messagePublisherSpy.lastPublishedEvent
+      val messageAsJsonNode = objMapper.readTree(message)
+
+
+      messageAsJsonNode.has("eventCreatedTimestampString") should equal(true)
+
+      val eventCreatedTimestamp = messageAsJsonNode.get("eventCreatedTimestampString").asText()
 
       eventCreatedTimestamp.length should be > 0
     }

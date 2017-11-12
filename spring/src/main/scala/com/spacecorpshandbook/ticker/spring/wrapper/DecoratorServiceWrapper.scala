@@ -38,7 +38,8 @@ class DecoratorServiceWrapper(wrappedDecorator: TickerService, messagePublisher:
           tickerDecoratedEvent.put("name", "TICKER_DECORATED")
 
           val now = ZonedDateTime.now(ZoneId.of("UTC"))
-          tickerDecoratedEvent.put("eventCreatedTimestamp", now.toString)
+          tickerDecoratedEvent.put("eventCreatedTimestamp", now.toInstant().toEpochMilli)
+          tickerDecoratedEvent.put("eventCreatedTimestampString", now.toString)
 
           messagePublisher.publish("TICKER_BATCH_PROCESSING", tickerDecoratedEvent.toString)
         }
