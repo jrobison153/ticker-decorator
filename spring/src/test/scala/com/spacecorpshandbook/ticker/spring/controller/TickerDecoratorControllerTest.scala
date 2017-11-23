@@ -2,7 +2,7 @@ package com.spacecorpshandbook.ticker.spring.controller
 
 import java.time.LocalDate
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeDecoder
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import com.spacecorpshandbook.ticker.spring.spy.StringMessagePublisherSpy
@@ -18,7 +18,9 @@ class TickerDecoratorControllerTest extends FlatSpec
   with Matchers
   with BeforeAndAfter {
 
-  val objMapper : ObjectMapper = new ObjectMapper().findAndRegisterModules
+  val objMapper : ObjectMapper = new ObjectMapper()
+    .findAndRegisterModules
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
   var messagePublisherSpy : StringMessagePublisherSpy = _
   var tickerAsString: String = _

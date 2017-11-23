@@ -1,7 +1,6 @@
 package com.spacecorpshandbook.ticker.lambda.handler
 
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
-import java.time.LocalDate
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -75,23 +74,6 @@ class TickerDecoratorHandlerTest extends FlatSpec
     val decoratorResponse = parseOutputStream()
 
     decoratorResponse.ticker.chromosome should equal(expectedChromosome)
-  }
-
-  it should "deserialize a fully populated ticker without error" in {
-
-    val ticker: Ticker = new Ticker
-
-    ticker.ticker = "foo"
-    ticker.date = LocalDate.now
-    ticker.open = 87.22
-    ticker.close = 89.21
-    ticker.high = 90.11
-    ticker.low = 80.11
-    ticker.volume = 39884843.0
-
-    setupInputStreamForTicker(ticker)
-
-    handler.decorateTicker(inputStream, outputStream, mockContext)
   }
 
   /* ================ Utility Functions ============================ */

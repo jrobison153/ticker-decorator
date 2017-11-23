@@ -1,6 +1,6 @@
 package com.spacecorpshandbook.ticker.spring.queue
 
-import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import com.spacecorpshandbook.ticker.spring.exception.InvalidTickerException
 import com.spacecorpshandbook.ticker.spring.wrapper.TickerServiceMirror
@@ -10,13 +10,9 @@ import org.springframework.stereotype.Component
   * Redis chromosome decoration task queue.
   */
 @Component
-class DecorationQueue(queue: StringQueue, service: TickerServiceMirror) {
+class DecorationQueue(queue: StringQueue, service: TickerServiceMirror, objMapper: ObjectMapper) {
 
   var UNDECORATED_TICKERS = "UNDECORATED_TICKERS"
-
-  val objMapper : ObjectMapper = new ObjectMapper()
-    .findAndRegisterModules()
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
   def readTicker = {
 
@@ -31,7 +27,7 @@ class DecorationQueue(queue: StringQueue, service: TickerServiceMirror) {
         service.addChromosome(ticker)
       } else {
 
-        throw new InvalidTickerException
+        throw new InvalidTickerException(tickerAsJson)
       }
     }
   }

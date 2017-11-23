@@ -1,5 +1,6 @@
 package com.spacecorpshandbook.ticker.spring.queue
 
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.spacecorpshandbook.ticker.spring.exception.InvalidTickerException
 import com.spacecorpshandbook.ticker.spring.spy.DecoratorServiceMirrorSpy
 import com.spacecorpshandbook.ticker.spring.stub.{InvalidTickerQueueStub, ValidTickerQueueStub}
@@ -8,13 +9,17 @@ import org.scalatest.{FlatSpec, Matchers}
 class DecorationQueueTest extends FlatSpec
   with Matchers {
 
+  val objMapper : ObjectMapper = new ObjectMapper()
+    .findAndRegisterModules()
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+
   behavior of "DecorationQueue when a valid ticker is popped from the queue"
 
   trait ValidTickerSetup {
 
     val validTickerQueueStub = new ValidTickerQueueStub
     val decoratorServiceSpy = new DecoratorServiceMirrorSpy
-    val decorationQueue = new DecorationQueue(validTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(validTickerQueueStub, decoratorServiceSpy, objMapper)
 
     decorationQueue.readTicker
   }
@@ -41,7 +46,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateIdNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -50,7 +55,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateIdEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -59,7 +64,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateTickerSymbolNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -68,7 +73,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateTickerSymbolEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -77,7 +82,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateDateNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -86,7 +91,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateDateEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -95,7 +100,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateOpenNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -104,7 +109,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateOpenEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -113,7 +118,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateCloseNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -122,7 +127,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateCloseEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -131,7 +136,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateHighNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -140,7 +145,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateHighEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -149,7 +154,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateLowNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -158,7 +163,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateLowEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -167,7 +172,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateVolumeNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -176,7 +181,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateVolumeEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -185,7 +190,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateSplitRatioNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -194,7 +199,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateSplitRatioEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -203,7 +208,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateExDividendNotSet
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }
@@ -212,7 +217,7 @@ class DecorationQueueTest extends FlatSpec
 
     invalidTickerQueueStub.invalidateExDividendEmpty
 
-    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy)
+    val decorationQueue = new DecorationQueue(invalidTickerQueueStub, decoratorServiceSpy, objMapper)
 
     an [InvalidTickerException] should be thrownBy decorationQueue.readTicker
   }

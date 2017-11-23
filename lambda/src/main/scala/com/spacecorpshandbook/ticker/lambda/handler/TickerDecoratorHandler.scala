@@ -5,7 +5,7 @@ import java.util.HashMap
 import java.util.concurrent.TimeUnit
 
 import com.amazonaws.services.lambda.runtime.Context
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.fasterxml.jackson.databind.{DeserializationFeature, JsonNode, ObjectMapper}
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.spacecorpshandbook.ticker.core.calculator.SimpleMovingAverageCalculator
@@ -27,6 +27,7 @@ class TickerDecoratorHandler {
   val objMapper: ObjectMapper = new ObjectMapper()
     .registerModule(new JavaTimeModule)
     .registerModule(DefaultScalaModule)
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
   def decorateTicker(request: InputStream, response: OutputStream, context: Context): Unit = {
 
@@ -47,7 +48,9 @@ class TickerDecoratorHandler {
 
     val body: JsonNode = httpRequest get "body"
 
-    objMapper.readValue(body.textValue, classOf[Ticker])
+    val bodyAsString = body.textValue()
+
+    objMapper.readValue(bodyAsString, classOf[Ticker])
   }
 
   private[this] def decorateTicker(ticker: Ticker): TickerDecoratorResponse = {

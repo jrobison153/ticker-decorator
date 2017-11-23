@@ -2,7 +2,6 @@ package com.spacecorpshandbook.ticker.spring.controller
 
 import java.util.concurrent.TimeUnit
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.spacecorpshandbook.ticker.core.model.{Ticker, TickerDecoratorResponse}
 import com.spacecorpshandbook.ticker.spring.message.MessagePublisher
 import com.spacecorpshandbook.ticker.spring.wrapper.TickerServiceMirror
@@ -18,8 +17,6 @@ import scala.concurrent.{Await, Future}
 @EnableAutoConfiguration
 @RequestMapping(Array("/ticker"))
 class TickerDecoratorController(decoratorService: TickerServiceMirror, messagePublisher: MessagePublisher) {
-
-  val objMapper : ObjectMapper = new ObjectMapper().findAndRegisterModules
 
   @RequestMapping(value = Array("decorate"), method = Array(RequestMethod.POST))
   def decorate(@RequestBody tickerToDecorate: Ticker): TickerDecoratorResponse = {
