@@ -41,5 +41,16 @@ subprojects {
     }
 
     test.dependsOn scalaTest
+}
 
+project(':lambda') {
+    dependencies {
+        compile project(':core')
+    }
+}
+
+project(':spring') {
+    dependencies {
+        compile project(':core')
+    }
 }
