@@ -35,7 +35,7 @@ trait TickerDatabaseSetup {
 
       collection = mongoDatabase.getCollection(STOCK_TICKER_COLLECTION)
 
-      val tickerDataStream = getClass.getClassLoader.getResourceAsStream("tickerdata.json")
+      val tickerDataStream = getClass.getClassLoader.getResourceAsStream("ticker-data.json")
       val linesOfJson = Source.fromInputStream(tickerDataStream).getLines
       var docsToInsert: Seq[Document] = Seq()
 
