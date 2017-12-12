@@ -2,7 +2,8 @@ package com.spacecorpshandbook.ticker.core.service
 
 import com.spacecorpshandbook.ticker.core.calculator.SimpleMovingAverageCalculator
 import com.spacecorpshandbook.ticker.core.chromosome.ChromosomeEncoder
-import com.spacecorpshandbook.ticker.core.io.db.{TickerDatabaseSetup, TickerPersistence}
+import com.spacecorpshandbook.ticker.core.constant.Database.STOCK_TICKER_COLLECTION
+import com.spacecorpshandbook.ticker.core.io.db.{MongoConnection, TickerDatabaseSetup, TickerPersistence}
 import com.spacecorpshandbook.ticker.core.map.DocumentToTickerMap
 import com.spacecorpshandbook.ticker.core.model.Ticker
 import org.bson.BsonString
@@ -19,28 +20,31 @@ import scala.concurrent.Future
 class DecoratorServiceITest extends AsyncFlatSpec
   with Matchers
   with BeforeAndAfter
-  with BeforeAndAfterAll
-  with TickerDatabaseSetup {
+  with BeforeAndAfterAll {
 
   var decoratorService: DecoratorService = _
+  var initDoneFuture : Future[_] = _
+  var persistence : TickerPersistence = _
 
   override def beforeAll(): Unit = {
 
     super.beforeAll()
 
-    databaseSetup
+    initDoneFuture = TickerDatabaseSetup.databaseSetup
   }
 
   override def afterAll(): Unit = {
 
-   databaseCleanup
-
     super.afterAll()
+
+    TickerDatabaseSetup.databaseCleanup
   }
 
   before {
 
-    persistence = TickerPersistence(mongoDatabase)
+    val mongoDatabase: MongoDatabase = MongoConnection.getDefaultDatabase
+
+    persistence = new TickerPersistence(mongoDatabase)
   }
 
   behavior of "a DecoratorService on an brand new, un-decorated, ticker"
@@ -82,8 +86,10 @@ class DecoratorServiceITest extends AsyncFlatSpec
 
   def findSymbolWithYearOfHistoryInDatabase() = {
 
-    val findFuture = collection
+    val mongoDatabase: MongoDatabase = MongoConnection.getDefaultDatabase
+    var collection: MongoCollection[Document] = mongoDatabase.getCollection(STOCK_TICKER_COLLECTION)
 
+    val findFuture = collection
       .find(org.mongodb.scala.model.Filters.equal("ticker", "A"))
       .sort(descending("date"))
       .limit(300)
@@ -100,6 +106,9 @@ class DecoratorServiceITest extends AsyncFlatSpec
 
   def clearChromosomeFieldInDatabase(tickerDoc: Document) = {
 
+    val mongoDatabase: MongoDatabase = MongoConnection.getDefaultDatabase
+    var collection: MongoCollection[Document] = mongoDatabase.getCollection(STOCK_TICKER_COLLECTION)
+
     val objectId = tickerDoc.get("_id") match {
 
       case Some(bsonThing: BsonValue) => bsonThing
@@ -111,6 +120,9 @@ class DecoratorServiceITest extends AsyncFlatSpec
   }
 
   def findSymbolInDatabase(id: String): Future[Seq[Document]] = {
+
+    val mongoDatabase: MongoDatabase = MongoConnection.getDefaultDatabase
+    var collection: MongoCollection[Document] = mongoDatabase.getCollection(STOCK_TICKER_COLLECTION)
 
     val objId: ObjectId = new ObjectId(id)
 
