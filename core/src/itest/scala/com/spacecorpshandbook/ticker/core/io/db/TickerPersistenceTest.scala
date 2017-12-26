@@ -3,33 +3,40 @@ package com.spacecorpshandbook.ticker.core.io.db
 import java.time.LocalDate
 
 import com.spacecorpshandbook.ticker.core.model.Ticker
+import org.mongodb.scala.MongoDatabase
 import org.scalatest.{AsyncFlatSpec, BeforeAndAfter, BeforeAndAfterAll, Matchers}
+
+import scala.concurrent.Future
 
 class TickerPersistenceTest extends AsyncFlatSpec
   with Matchers
   with BeforeAndAfter
-  with BeforeAndAfterAll
-  with TickerDatabaseSetup {
+  with BeforeAndAfterAll {
 
   val ticker: Ticker = new Ticker
+  var persistence : TickerPersistence = _
+  var initDoneFuture: Future[_] = _
 
   override def beforeAll() {
 
     super.beforeAll()
 
-    databaseSetup
+    initDoneFuture = TickerDatabaseSetup.databaseSetup
   }
 
   override def afterAll() {
 
-    databaseCleanup
-
     super.afterAll()
+
+    TickerDatabaseSetup.databaseCleanup
   }
+
 
   before {
 
-    persistence = TickerPersistence(mongoDatabase)
+    val mongoDatabase: MongoDatabase = MongoConnection.getDefaultDatabase
+
+    persistence = new TickerPersistence(mongoDatabase)
   }
 
   behavior of "database search"
@@ -106,7 +113,6 @@ class TickerPersistenceTest extends AsyncFlatSpec
       assert(tickers.isEmpty)
     }
   }
-
 
   it should "eventually return no results when ticker symbol doesn't exist in the database" in {
 

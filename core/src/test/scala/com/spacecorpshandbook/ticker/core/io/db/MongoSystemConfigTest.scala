@@ -4,7 +4,7 @@ import org.junit.Rule
 import org.junit.contrib.java.lang.system.EnvironmentVariables
 import org.scalatest.{FlatSpec, Matchers}
 
-class MongoConnectionITest extends FlatSpec
+class MongoSystemConfigTest extends FlatSpec
   with Matchers {
 
   val _envVars: EnvironmentVariables = new EnvironmentVariables
@@ -14,7 +14,7 @@ class MongoConnectionITest extends FlatSpec
 
   val mongoSystemConfig = new MongoSystemConfig
 
-  behavior of "A MongoConnection"
+  behavior of "A MongoSystemConfig"
 
   it should "default the database name when the environment variable isn't set" in {
 
@@ -120,7 +120,7 @@ class MongoConnectionITest extends FlatSpec
 
     val noCredentialsMongoUrlRegEx = """mongodb\:\/\/[a-zA-Z]+\:[0-9]+\/[\w]+"""
 
-    MongoConnection.composeConnectionUrl should fullyMatch regex noCredentialsMongoUrlRegEx
+    mongoSystemConfig.composeConnectionUrl should fullyMatch regex noCredentialsMongoUrlRegEx
   }
 
   it should "set the mongo connection string correctly when there are credentials" in {
@@ -133,6 +133,6 @@ class MongoConnectionITest extends FlatSpec
 
     val withCredentialsMongoUrlRegEx = s"mongodb\\:\\/\\/$userName\\:$passowrd@[a-zA-Z]+\\:[0-9]+\\/[\\w]+".r
 
-    MongoConnection.composeConnectionUrl should fullyMatch regex withCredentialsMongoUrlRegEx
+    mongoSystemConfig.composeConnectionUrl should fullyMatch regex withCredentialsMongoUrlRegEx
   }
 }
